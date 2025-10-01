@@ -1,30 +1,21 @@
 /*****************************************************************************/
-//  HighLevelExample.ino
-//  Hardware:      Grove - 6-Axis Accelerometer&Gyroscope
-//	Arduino IDE:   Arduino-1.65
-//	Author:	       Lambor
-//	Date: 	       Oct,2015
+//  SmartRacket IMU Test
+//  Hardware:      Seeed XIAO nRF52840 Sense + LSM6DS3
+//	Arduino IDE:   Arduino-1.8.19+
+//	Author:	       DIID Term Project Team
+//	Date: 	       2024
 //	Version:       v1.0
 //
-//  Modified by:
-//  Data:
-//  Description:
+//  Description:   Basic IMU sensor test for SmartRacket project
+//                 Tests LSM6DS3 accelerometer, gyroscope, and temperature
 //
-//	by www.seeedstudio.com
-//
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2.1 of the License, or (at your option) any later version.
-//
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
-//
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+//  Note:          For LSM6DS3 library compatibility with nRF52840,
+//                 modify LSM6DS3.cpp line 108 to use conditional compilation:
+//                 #if !defined(ARDUINO_ARCH_MBED)
+//                     SPI.setBitOrder(MSBFIRST);
+//                     SPI.setDataMode(SPI_MODE3);
+//                     SPI.setClockDivider(SPI_CLOCK_DIV16);
+//                 #endif
 //
 /*******************************************************************************/
 
@@ -35,42 +26,56 @@
 LSM6DS3 myIMU(I2C_MODE, 0x6A);    //I2C device address 0x6A
 
 void setup() {
-    // put your setup code here, to run once:
+    // Initialize serial communication
     Serial.begin(9600);
     while (!Serial);
-    //Call .begin() to configure the IMUs
+    
+    // Initialize I2C communication
+    Wire.begin();
+    Wire.setClock(400000);  // Set I2C clock to 400kHz for faster communication
+    
+    // Initialize IMU sensor
+    Serial.println("Initializing LSM6DS3 IMU...");
     if (myIMU.begin() != 0) {
-        Serial.println("Device error");
+        Serial.println("IMU Device error - Check connections!");
+        while(1); // Stop execution if IMU fails to initialize
     } else {
-        Serial.println("Device OK!");
+        Serial.println("IMU Device OK!");
+        Serial.println("Starting data collection...");
+        Serial.println("Timestamp,AccelX,AccelY,AccelZ,GyroX,GyroY,GyroZ,TempC");
     }
 }
 
 void loop() {
-    //Accelerometer
-    Serial.print("\nAccelerometer:\n");
-    Serial.print(" X1 = ");
-    Serial.println(myIMU.readFloatAccelX(), 4);
-    Serial.print(" Y1 = ");
-    Serial.println(myIMU.readFloatAccelY(), 4);
-    Serial.print(" Z1 = ");
-    Serial.println(myIMU.readFloatAccelZ(), 4);
-
-    //Gyroscope
-    Serial.print("\nGyroscope:\n");
-    Serial.print(" X1 = ");
-    Serial.println(myIMU.readFloatGyroX(), 4);
-    Serial.print(" Y1 = ");
-    Serial.println(myIMU.readFloatGyroY(), 4);
-    Serial.print(" Z1 = ");
-    Serial.println(myIMU.readFloatGyroZ(), 4);
-
-    //Thermometer
-    Serial.print("\nThermometer:\n");
-    Serial.print(" Degrees C1 = ");
-    Serial.println(myIMU.readTempC(), 4);
-    Serial.print(" Degrees F1 = ");
-    Serial.println(myIMU.readTempF(), 4);
-
-    delay(1000);
+    // Read IMU data
+    float accelX = myIMU.readFloatAccelX();
+    float accelY = myIMU.readFloatAccelY();
+    float accelZ = myIMU.readFloatAccelZ();
+    float gyroX = myIMU.readFloatGyroX();
+    float gyroY = myIMU.readFloatGyroY();
+    float gyroZ = myIMU.readFloatGyroZ();
+    float tempC = myIMU.readTempC();
+    
+    // Get timestamp
+    unsigned long timestamp = millis();
+    
+    // Output data in CSV format for easy analysis
+    Serial.print(timestamp);
+    Serial.print(",");
+    Serial.print(accelX, 4);
+    Serial.print(",");
+    Serial.print(accelY, 4);
+    Serial.print(",");
+    Serial.print(accelZ, 4);
+    Serial.print(",");
+    Serial.print(gyroX, 4);
+    Serial.print(",");
+    Serial.print(gyroY, 4);
+    Serial.print(",");
+    Serial.print(gyroZ, 4);
+    Serial.print(",");
+    Serial.println(tempC, 2);
+    
+    // Delay for 20ms (50Hz sampling rate - same as BLE version)
+    delay(20);
 }
