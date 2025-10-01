@@ -1,0 +1,107 @@
+Sub 標註峰值與範圍()
+
+    Dim lastRow As Long
+    Dim i As Long
+    Dim startIdx As Long
+    Dim endIdx As Long
+    
+    ' 找到 G 欄最後一列
+    lastRow = 工作表1.Cells(工作表1.Rows.count, "G").End(xlUp).Row
+    
+    ' 遍歷每筆資料 (從第2列開始判斷)
+    For i = 2 To lastRow
+        ' 檢查是否是負峰值 且小於 -1000
+        If 工作表1.Cells(i, "G").Value < 工作表1.Cells(i - 1, "G").Value And _
+           工作表1.Cells(i, "G").Value < 工作表1.Cells(i + 1, "G").Value And _
+           工作表1.Cells(i, "G").Value < -1000 Then
+           
+           ' 計算範圍 (峰值往前19筆 + 當筆 + 往後20筆)
+           startIdx = Application.WorksheetFunction.Max(2, i - 19)  ' 最小從第2列開始
+           endIdx = Application.WorksheetFunction.Min(lastRow, i + 20)
+           
+           ' I欄標註 dive
+           Dim j As Long
+           For j = startIdx To endIdx
+               工作表1.Cells(j, "I").Value = "dive"
+           Next j
+           
+           ' (可選) 也在 J 欄標示 V，代表負峰值
+           工作表1.Cells(i, "J").Value = "V"
+        End If
+    Next i
+    
+    MsgBox "已完成峰值與範圍標註！"
+End Sub
+
+
+
+
+'只針對「超過40筆的標記區塊」處理
+'找出這段裡面 G欄最小值所在列
+'在該列的 L 欄標註 V
+'以該列為中心，向前 19 筆 + 該筆 + 向後 20 筆（共 40 筆），在 K 欄標記 drive
+Sub FindBlocksAndLabelMinG()
+    Dim ws As Worksheet
+    Dim lastRow As Long
+    Dim i As Long
+    Dim currentLabel As String
+    Dim startRow As Long
+    Dim count As Long
+    Dim minG As Double
+    Dim minGRow As Long
+    Dim j As Long
+    
+    ' 設定工作表
+    Set ws = ThisWorkbook.Sheets("Sheet1")  ' ← 視需要修改工作表名稱
+    
+    ' 找出最後一列
+    lastRow = ws.Cells(ws.Rows.count, "I").End(xlUp).Row
+    
+    i = 1
+    Do While i <= lastRow
+        currentLabel = ws.Cells(i, "I").Value
+        
+        ' 如果這格不是空白，就開始計算同樣標記的連續長度
+        If currentLabel <> "" Then
+            startRow = i
+            count = 1
+            
+            Do While (i + count <= lastRow) And (ws.Cells(i + count, "I").Value = currentLabel)
+                count = count + 1
+            Loop
+            
+            ' 如果長度超過 40，就在這段裡找 G 欄最小值所在列
+            If count >= 40 Then
+                minG = ws.Cells(startRow, "G").Value
+                minGRow = startRow
+                
+                For j = startRow To startRow + count - 1
+                    If ws.Cells(j, "G").Value < minG Then
+                        minG = ws.Cells(j, "G").Value
+                        minGRow = j
+                    End If
+                Next j
+                
+                ' 在 L 欄標示 V
+                ws.Cells(minGRow, "N").Value = "V"
+                
+                ' 以 minGRow 為中心，向前 19 筆、向後 20 筆，總共 40 筆
+                Dim startIdx As Long
+                Dim endIdx As Long
+                startIdx = Application.WorksheetFunction.Max(2, minGRow - 19)
+                endIdx = Application.WorksheetFunction.Min(lastRow, minGRow + 20)
+                
+                For j = startIdx To endIdx
+                    ws.Cells(j, "M").Value = "drive"
+                Next j
+            End If
+            
+            ' 跳到下一段
+            i = i + count
+        Else
+            i = i + 1
+        End If
+    Loop
+    
+    MsgBox "已完成超過40筆的區段處理，並已標記最小 G 值與範圍！", vbInformation
+End Sub
