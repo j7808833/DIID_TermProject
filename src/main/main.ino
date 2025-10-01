@@ -168,7 +168,7 @@ void loop() {
         Serial.println("Connected to central");
         
         // 設定資料傳輸參數
-        const unsigned long interval = 20;  // 傳輸間隔20ms = 50Hz頻率
+        const unsigned long interval = 1;  // 傳輸間隔1ms = 1000Hz頻率
         unsigned long lastSendTime = millis();  // 上次傳輸時間
         
         // ====================================================================
