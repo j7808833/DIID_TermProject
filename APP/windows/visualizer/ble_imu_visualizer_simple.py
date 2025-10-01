@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 """
 BLE IMU 3D 視覺化程式 - 簡化版
-解決Windows GUI事件循環衝突問題
+基於 ble_imu_receiver.py 的穩定連接邏輯
+只在收到真實資料後才開始3D顯示
 """
 
 import time
@@ -17,6 +18,10 @@ from bleak import BleakClient, BleakScanner
 import asyncio
 import threading
 import queue
+import nest_asyncio
+
+# 允許嵌套事件循環（Spyder需要）
+nest_asyncio.apply()
 
 class BLEIMUVisualizerSimple:
     def __init__(self):
@@ -25,12 +30,14 @@ class BLEIMUVisualizerSimple:
         self.connected = False
         self.client = None
         self.data_queue = queue.Queue()
+        self.data_received = False  # 是否已收到真實資料
         
         # IMU資料
         self.accel = [0, 0, 0]  # 加速度
         self.gyro = [0, 0, 0]   # 角速度
         self.voltage = 0        # 電壓
-        self.debug_mode = False # 除錯模式
+        self.timestamp = 0      # 時間戳
+        self.data_count = 0     # 資料包計數
         
         # 姿態角度（歐拉角）
         self.roll = 0   # 繞X軸旋轉
@@ -87,8 +94,7 @@ class BLEIMUVisualizerSimple:
                 gyroZ = struct.unpack('<f', data[24:28])[0]
                 voltageRaw = struct.unpack('<H', data[28:30])[0]
                 
-                # 顯示原始資料
-                print(f"原始資料: 時間={timestamp}, 加速度=[{accelX:.4f},{accelY:.4f},{accelZ:.4f}], 角速度=[{gyroX:.2f},{gyroY:.2f},{gyroZ:.2f}], 電壓={voltageRaw/100.0:.2f}V")
+                self.data_count += 1
                 
                 # 將資料放入佇列
                 imu_data = {
@@ -99,8 +105,13 @@ class BLEIMUVisualizerSimple:
                 }
                 self.data_queue.put(imu_data)
                 
+                # 標記已收到真實資料
+                if not self.data_received:
+                    self.data_received = True
+                    print(f"\n[OK] 開始接收真實IMU資料！資料包 #{self.data_count}")
+                
         except Exception as e:
-            print(f"BLE資料解析錯誤: {e}")
+            print(f"\rBLE資料解析錯誤: {e}", end='', flush=True)
     
     def process_ble_data(self):
         """處理BLE資料佇列"""
@@ -111,39 +122,30 @@ class BLEIMUVisualizerSimple:
                 self.accel = data['accel']
                 self.gyro = data['gyro']
                 self.voltage = data['voltage']
+                self.timestamp = data['timestamp']
                 
                 # 計算姿態角度
                 self.calculate_attitude()
                 
                 data_count += 1
                 
-                # 除錯輸出
-                if self.debug_mode:
-                    print(f"IMU: 時間={data['timestamp']}, 加速度={self.accel}, 角速度={self.gyro}, 電壓={self.voltage:.2f}V")
-            
             # 每100幀顯示一次資料接收狀態
             if hasattr(self, 'frame_count'):
                 self.frame_count += 1
             else:
                 self.frame_count = 0
                 
-            if self.frame_count % 100 == 0:
-                if data_count > 0:
-                    print(f"收到 {data_count} 個BLE資料包")
-                else:
-                    print("沒有收到新的BLE資料")
+            if self.frame_count % 100 == 0 and self.data_received:
+                print(f"\r資料包 #{self.data_count:4d} | 時間:{self.timestamp} | 加速度:[{self.accel[0]:6.3f},{self.accel[1]:6.3f},{self.accel[2]:6.3f}] | 角速度:[{self.gyro[0]:6.2f},{self.gyro[1]:6.2f},{self.gyro[2]:6.2f}] | 電壓:{self.voltage:4.2f}V | 角度:Roll={self.roll:6.1f}°,Pitch={self.pitch:6.1f}°", end='', flush=True)
                 
         except queue.Empty:
             pass
         except Exception as e:
-            print(f"資料處理錯誤: {e}")
+            print(f"\r資料處理錯誤: {e}", end='', flush=True)
     
     def calculate_attitude(self):
         """計算姿態角度"""
         ax, ay, az = self.accel
-        
-        # 除錯輸出原始加速度
-        print(f"計算角度: 加速度=[{ax:.4f},{ay:.4f},{az:.4f}]")
         
         # 計算俯仰角和滾轉角
         self.pitch = math.atan2(-ax, math.sqrt(ay*ay + az*az)) * 180 / math.pi
@@ -156,9 +158,6 @@ class BLEIMUVisualizerSimple:
         self.roll = self.roll % 360
         self.pitch = self.pitch % 360
         self.yaw = self.yaw % 360
-        
-        # 除錯輸出角度
-        print(f"計算結果: Roll={self.roll:.1f}°, Pitch={self.pitch:.1f}°, Yaw={self.yaw:.1f}°")
     
     def draw_axes(self):
         """繪製三軸指標"""
@@ -263,26 +262,14 @@ class BLEIMUVisualizerSimple:
         # 繪製場景
         self.draw_reference_grid()
         
-        if self.connected:
-            # 有BLE連接時，繪製真實資料
+        if self.connected and self.data_received:
+            # 有BLE連接且已收到真實資料時，繪製動態軸
             self.draw_axes()
         else:
-            # 沒有BLE連接時，繪製靜止的軸
+            # 沒有BLE連接或未收到資料時，繪製靜止的軸
             self.draw_static_axes()
         
         pygame.display.flip()
-        
-        # 除錯：每100幀顯示一次渲染狀態
-        if hasattr(self, 'render_count'):
-            self.render_count += 1
-        else:
-            self.render_count = 0
-            
-        if self.render_count % 100 == 0:
-            if self.connected:
-                print(f"渲染真實資料... 角度: Roll={self.roll:.1f}°, Pitch={self.pitch:.1f}°, Yaw={self.yaw:.1f}°")
-            else:
-                print("等待BLE連接...")
     
     def handle_events(self):
         """處理事件"""
@@ -321,45 +308,55 @@ class BLEIMUVisualizerSimple:
         print("="*50)
     
     def connect_ble_async(self):
-        """在背景線程中連接BLE"""
+        """在背景線程中連接BLE - 基於 ble_imu_receiver.py 的穩定連接邏輯"""
         def connect():
             try:
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
                 
+                print("正在掃描BLE設備...")
                 devices = loop.run_until_complete(BleakScanner.discover(timeout=10.0))
                 target_device = None
                 
+                print(f"找到 {len(devices)} 個BLE設備:")
                 for device in devices:
+                    print(f"  - {device.name or 'Unknown'} ({device.address})")
                     if device.name and self.device_name in device.name:
                         target_device = device
-                        print(f"找到設備: {device.name} ({device.address})")
-                        break
+                        print(f"  [OK] 找到目標設備: {device.name}")
                 
                 if not target_device:
                     print(f"未找到設備: {self.device_name}")
                     return
                 
+                print(f"正在連接到 {target_device.name}...")
                 self.client = BleakClient(target_device.address)
                 loop.run_until_complete(self.client.connect())
                 print("BLE連接成功!")
                 self.connected = True
                 
+                # 啟動IMU服務的通知
+                print("啟動IMU服務通知...")
                 loop.run_until_complete(self.client.start_notify(self.characteristic_uuid, self.notification_handler))
-                print("BLE通知已啟動")
-                print("開始接收真實IMU資料...")
                 
-                # 保持連接並監控狀態
+                print("開始接收IMU資料...")
+                print("按 Ctrl+C 停止")
+                print("=" * 60)
+                
+                # 保持連接並運行事件循環
                 while self.connected and self.running:
                     try:
                         # 檢查連接狀態
                         if not self.client.is_connected:
-                            print("BLE連接已斷開!")
+                            print("\nBLE連接已斷開!")
                             self.connected = False
                             break
-                        time.sleep(0.1)
+                        
+                        # 運行事件循環來處理通知
+                        loop.run_until_complete(asyncio.sleep(0.01))
+                        
                     except Exception as e:
-                        print(f"BLE連接監控錯誤: {e}")
+                        print(f"\nBLE連接監控錯誤: {e}")
                         self.connected = False
                         break
                 
@@ -375,17 +372,12 @@ class BLEIMUVisualizerSimple:
     
     def run(self):
         """主執行迴圈"""
+        print("BLE IMU 3D 視覺化程式啟動")
         print("正在嘗試連接BLE設備...")
         self.connect_ble_async()
         
-        print("BLE IMU 3D 視覺化程式啟動")
-        print("等待BLE連接...")
         print("按 H 查看鍵盤控制說明")
         self.show_help()
-        
-        # 自動開啟除錯模式
-        self.debug_mode = True
-        print("除錯模式已自動開啟")
         
         clock = pygame.time.Clock()
         
@@ -396,9 +388,6 @@ class BLEIMUVisualizerSimple:
             # 處理BLE資料
             if self.connected:
                 self.process_ble_data()
-            else:
-                # 沒有BLE連接時，顯示靜止畫面
-                pass
             
             # 渲染場景
             self.render()
@@ -419,6 +408,11 @@ class BLEIMUVisualizerSimple:
 
 def main():
     """主函數"""
+    visualizer = BLEIMUVisualizerSimple()
+    visualizer.run()
+
+def run_visualizer():
+    """Spyder專用執行函數"""
     visualizer = BLEIMUVisualizerSimple()
     visualizer.run()
 
