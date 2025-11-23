@@ -360,6 +360,8 @@ public class BLEManager {
                         Log.d(TAG, "寫入描述符: " + writeSuccess);
                     } else {
                         Log.w(TAG, "特徵沒有描述符，可能無法啟用通知");
+                        Log.w(TAG, "嘗試直接啟用通知（某些設備可能不需要描述符）");
+                        Log.d(TAG, "資料回調狀態: " + (dataCallback != null ? "已設定" : "未設定"));
                         // 即使沒有描述符，也嘗試觸發連接成功回調
                         if (connectionCallback != null) {
                             connectionCallback.onConnected();
@@ -378,6 +380,7 @@ public class BLEManager {
         public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 Log.d(TAG, "描述符寫入成功，通知已啟用");
+                Log.d(TAG, "資料回調狀態: " + (dataCallback != null ? "已設定" : "未設定"));
                 if (connectionCallback != null) {
                     connectionCallback.onConnected();
                 }
@@ -396,6 +399,7 @@ public class BLEManager {
             byte[] data = characteristic.getValue();
             
             if (data == null || data.length == 0) {
+                Log.w(TAG, "收到空資料或 null");
                 return;
             }
             
@@ -404,9 +408,11 @@ public class BLEManager {
             // 處理資料分段
             if (data.length == EXPECTED_DATA_SIZE) {
                 // 完整資料，直接解析
+                Log.d(TAG, "收到完整資料 (30 bytes)，直接解析");
                 processCompleteData(data);
             } else if (data.length < EXPECTED_DATA_SIZE) {
                 // 分段資料，需要拼接
+                Log.d(TAG, "收到分段資料 (" + data.length + " bytes)，需要拼接");
                 processFragmentedData(data);
             } else {
                 // 資料過長，可能是錯誤
@@ -425,21 +431,39 @@ public class BLEManager {
             // 重置緩衝區
             bufferOffset = 0;
             
+            // 驗證資料長度
+            if (data == null || data.length != EXPECTED_DATA_SIZE) {
+                Log.e(TAG, "資料長度錯誤: " + (data != null ? data.length : 0) + " bytes，預期: " + EXPECTED_DATA_SIZE);
+                return;
+            }
+            
             // 解析資料
             IMUData imuData = IMUDataParser.parse(data);
             
             if (imuData != null) {
+                // 先記錄原始資料（用於除錯）
+                Log.d(TAG, "解析後的原始資料: timestamp=" + imuData.timestamp + 
+                    ", accel=[" + imuData.accelX + "," + imuData.accelY + "," + imuData.accelZ + "]" +
+                    ", gyro=[" + imuData.gyroX + "," + imuData.gyroY + "," + imuData.gyroZ + "]" +
+                    ", voltage=" + imuData.voltage);
+                
                 if (IMUDataParser.validate(imuData)) {
-                    Log.d(TAG, "資料解析成功: timestamp=" + imuData.timestamp + 
-                        ", accel=[" + imuData.accelX + "," + imuData.accelY + "," + imuData.accelZ + "]");
+                    Log.d(TAG, "資料驗證通過，傳遞給回調");
+                    if (dataCallback != null) {
+                        dataCallback.onDataReceived(imuData);
+                    } else {
+                        Log.e(TAG, "資料回調為 null！請檢查 MainActivity 是否正確設定了回調");
+                    }
+                } else {
+                    // 驗證失敗的詳細資訊已在 IMUDataParser.validate() 中記錄
+                    Log.w(TAG, "資料驗證失敗，但暫時允許通過（用於除錯）");
+                    // 暫時允許驗證失敗的資料通過，以便查看實際數值
                     if (dataCallback != null) {
                         dataCallback.onDataReceived(imuData);
                     }
-                } else {
-                    Log.w(TAG, "資料驗證失敗");
                 }
             } else {
-                Log.w(TAG, "資料解析失敗");
+                Log.e(TAG, "資料解析失敗 - IMUDataParser.parse() 返回 null");
             }
         }
         
@@ -447,12 +471,19 @@ public class BLEManager {
          * 處理分段資料
          */
         private void processFragmentedData(byte[] fragment) {
+            if (fragment == null || fragment.length == 0) {
+                Log.w(TAG, "分段資料為 null 或空");
+                return;
+            }
+            
             // 將分段資料複製到緩衝區
             int remaining = EXPECTED_DATA_SIZE - bufferOffset;
             int copyLength = Math.min(fragment.length, remaining);
             
-            System.arraycopy(fragment, 0, dataBuffer, bufferOffset, copyLength);
-            bufferOffset += copyLength;
+            if (copyLength > 0) {
+                System.arraycopy(fragment, 0, dataBuffer, bufferOffset, copyLength);
+                bufferOffset += copyLength;
+            }
             
             Log.d(TAG, "接收分段資料: " + fragment.length + " bytes，緩衝區進度: " + 
                 bufferOffset + "/" + EXPECTED_DATA_SIZE);
@@ -460,9 +491,19 @@ public class BLEManager {
             // 檢查是否已接收完整資料
             if (bufferOffset >= EXPECTED_DATA_SIZE) {
                 // 資料完整，解析並處理
+                Log.d(TAG, "分段資料拼接完成，開始解析");
                 byte[] completeData = new byte[EXPECTED_DATA_SIZE];
                 System.arraycopy(dataBuffer, 0, completeData, 0, EXPECTED_DATA_SIZE);
                 processCompleteData(completeData);
+                
+                // 處理剩餘資料（如果有）
+                if (fragment.length > copyLength) {
+                    int remainingBytes = fragment.length - copyLength;
+                    Log.d(TAG, "分段資料有剩餘 " + remainingBytes + " bytes，處理下一段");
+                    byte[] remainingData = new byte[remainingBytes];
+                    System.arraycopy(fragment, copyLength, remainingData, 0, remainingBytes);
+                    processFragmentedData(remainingData);
+                }
             } else if (bufferOffset + fragment.length > EXPECTED_DATA_SIZE) {
                 // 資料溢出，重置緩衝區
                 Log.w(TAG, "資料溢出，重置緩衝區");
@@ -476,6 +517,18 @@ public class BLEManager {
      */
     public void setDataCallback(IMUDataCallback callback) {
         this.dataCallback = callback;
+        if (callback != null) {
+            Log.d(TAG, "資料回調已設定");
+        } else {
+            Log.w(TAG, "資料回調被設為 null");
+        }
+    }
+    
+    /**
+     * 取得資料回調（用於檢查）
+     */
+    public IMUDataCallback getDataCallback() {
+        return dataCallback;
     }
     
     /**

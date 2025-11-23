@@ -60,7 +60,7 @@ Android 手機 App 提供以下核心功能：
 |------|------|------|------|
 | **主控板** | Seeed XIAO nRF52840 Sense | 20×17.5×5 mm | ARM Cortex-M4F, 256KB Flash, 32KB RAM |
 | **感測器** | LSM6DS3TR | - | 六軸IMU（加速度計 + 陀螺儀） |
-| **電池** | LIR2032 | 32×16×6 mm | 3.6V 鋰電池 |
+| **電池** | 501230 | - | 3.7V 鋰電池，150mAh |
 | **充電接口** | Type-C | 5×8.5×3.5 mm | USB充電接口 |
 
 ### IMU 感測器參數
@@ -82,7 +82,7 @@ Android 手機 App 提供以下核心功能：
 │   ├── I2C 連接 LSM6DS3 (SDA, SCL)
 │   ├── A0 類比輸入（電壓監控）
 │   └── P0_13 數位輸出（充電模式控制）
-└── 電池 (LIR2032)
+└── 電池 (501230, 3.7V, 150mAh)
 ```
 
 ---
@@ -157,7 +157,7 @@ Android 手機 App 提供以下核心功能：
 | 16-19 | 4 bytes | `float` | `gyroX` | X軸角速度（單位：dps，已校正） |
 | 20-23 | 4 bytes | `float` | `gyroY` | Y軸角速度（單位：dps，已校正） |
 | 24-27 | 4 bytes | `float` | `gyroZ` | Z軸角速度（單位：dps，已校正） |
-| 28-29 | 2 bytes | `uint16_t` | `voltageRaw` | 原始電壓讀值（0-1023，需除以100.0得到電壓） |
+| 28-29 | 2 bytes | `uint16_t` | `voltageRaw` | 原始電壓讀值（0-1023，使用公式轉換：voltageRaw * (3.3 / 1023.0) * 2.0） |
 
 ### 資料解析範例（Python）
 
@@ -185,10 +185,12 @@ def parse_imu_data(data: bytes) -> dict:
     gyroX = struct.unpack('<f', data[16:20])[0]        # float
     gyroY = struct.unpack('<f', data[20:24])[0]        # float
     gyroZ = struct.unpack('<f', data[24:28])[0]        # float
-    voltageRaw = struct.unpack('<H', data[28:30])[0]   # uint16_t
+    voltageRaw = struct.unpack('<H', data[28:30])[0]   # uint16_t (0-1023)
     
     # 計算實際電壓值
-    voltage = voltageRaw / 100.0
+    # 電池：501230, 3.7V, 150mAh
+    # 公式：voltageRaw * (3.3 / 1023.0) * 2.0 (3.3V參考電壓，2:1分壓比)
+    voltage = voltageRaw * (3.3 / 1023.0) * 2.0
     
     return {
         'timestamp': timestamp,        # 毫秒
@@ -229,6 +231,11 @@ function parseIMUData(buffer: ArrayBuffer): IMUData {
     const gyroZ = view.getFloat32(offset, true); offset += 4;
     const voltageRaw = view.getUint16(offset, true); offset += 2;
     
+    // 計算實際電壓值
+    // 電池：501230, 3.7V, 150mAh
+    // 公式：voltageRaw * (3.3 / 1023.0) * 2.0 (3.3V參考電壓，2:1分壓比)
+    const voltage = voltageRaw * (3.3 / 1023.0) * 2.0;
+    
     return {
         timestamp,
         accelX,
@@ -237,7 +244,7 @@ function parseIMUData(buffer: ArrayBuffer): IMUData {
         gyroX,
         gyroY,
         gyroZ,
-        voltage: voltageRaw / 100.0
+        voltage
     };
 }
 ```
@@ -449,7 +456,10 @@ class BLEIMUReceiver {
     double gyroY = byteData.getFloat32(20, Endian.little);
     double gyroZ = byteData.getFloat32(24, Endian.little);
     int voltageRaw = byteData.getUint16(28, Endian.little);
-    double voltage = voltageRaw / 100.0;
+    // 計算實際電壓值
+    // 電池：501230, 3.7V, 150mAh
+    // 公式：voltageRaw * (3.3 / 1023.0) * 2.0 (3.3V參考電壓，2:1分壓比)
+    double voltage = voltageRaw * (3.3 / 1023.0) * 2.0;
     
     Map<String, dynamic> imuData = {
       'timestamp': timestamp,

@@ -22,6 +22,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import android.util.Log;
+
 import com.example.smartbadmintonracket.calibration.CalibrationManager;
 
 public class MainActivity extends AppCompatActivity {
@@ -79,8 +81,10 @@ public class MainActivity extends AppCompatActivity {
         // 設定校正按鈕
         setupCalibrationButton();
         
-        // 設定 BLE 回調
+        // 設定 BLE 回調（必須在初始化後立即設定）
         setupBLECallbacks();
+        
+        Log.d("MainActivity", "BLE 回調已設定");
     }
     
     private void initViews() {
@@ -296,7 +300,9 @@ public class MainActivity extends AppCompatActivity {
     }
     
     private void setupBLECallbacks() {
+        Log.d("MainActivity", "設定 BLE 資料回調");
         bleManager.setDataCallback(data -> {
+            Log.d("MainActivity", "收到 IMU 資料回調: timestamp=" + data.timestamp);
             runOnUiThread(() -> {
                 // 如果正在校正，將資料加入校正樣本
                 if (calibrationManager != null && calibrationManager.isCalibrating()) {
@@ -313,6 +319,7 @@ public class MainActivity extends AppCompatActivity {
                 updateDataCount();
             });
         });
+        Log.d("MainActivity", "BLE 資料回調設定完成");
     }
     
     private void updateDataDisplay(IMUData data) {

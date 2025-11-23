@@ -60,7 +60,7 @@ Additionally, for smash shots, the system calculates and displays the **ball spe
 |-----------|-------|----------------|----------|
 | **Main Board** | Seeed XIAO nRF52840 Sense | 20×17.5×5 mm | ARM Cortex-M4F, 256KB Flash, 32KB RAM |
 | **Sensor** | LSM6DS3TR | - | Six-axis IMU (Accelerometer + Gyroscope) |
-| **Battery** | LIR2032 | 32×16×6 mm | 3.6V Lithium Battery |
+| **Battery** | 501230 | - | 3.7V Lithium Battery, 150mAh |
 | **Charging Interface** | Type-C | 5×8.5×3.5 mm | USB Charging Interface |
 
 ### IMU Sensor Parameters
@@ -82,7 +82,7 @@ Racket Handle Internal Configuration:
 │   ├── I2C Connection to LSM6DS3 (SDA, SCL)
 │   ├── A0 Analog Input (Voltage Monitoring)
 │   └── P0_13 Digital Output (Charging Mode Control)
-└── Battery (LIR2032)
+└── Battery (501230, 3.7V, 150mAh)
 ```
 
 ---
@@ -157,7 +157,7 @@ Connection Status Check Flow:
 | 16-19 | 4 bytes | `float` | `gyroX` | X-axis angular velocity (unit: dps, calibrated) |
 | 20-23 | 4 bytes | `float` | `gyroY` | Y-axis angular velocity (unit: dps, calibrated) |
 | 24-27 | 4 bytes | `float` | `gyroZ` | Z-axis angular velocity (unit: dps, calibrated) |
-| 28-29 | 2 bytes | `uint16_t` | `voltageRaw` | Raw voltage reading (0-1023, divide by 100.0 to get voltage) |
+| 28-29 | 2 bytes | `uint16_t` | `voltageRaw` | Raw voltage reading (0-1023, convert using formula: voltageRaw * (3.3 / 1023.0) * 2.0) |
 
 ### Data Parsing Example (Python)
 
@@ -185,10 +185,12 @@ def parse_imu_data(data: bytes) -> dict:
     gyroX = struct.unpack('<f', data[16:20])[0]        # float
     gyroY = struct.unpack('<f', data[20:24])[0]        # float
     gyroZ = struct.unpack('<f', data[24:28])[0]        # float
-    voltageRaw = struct.unpack('<H', data[28:30])[0]   # uint16_t
+    voltageRaw = struct.unpack('<H', data[28:30])[0]   # uint16_t (0-1023)
     
     # Calculate actual voltage value
-    voltage = voltageRaw / 100.0
+    # Battery: 501230, 3.7V, 150mAh
+    # Formula: voltageRaw * (3.3 / 1023.0) * 2.0 (3.3V reference, 2:1 voltage divider)
+    voltage = voltageRaw * (3.3 / 1023.0) * 2.0
     
     return {
         'timestamp': timestamp,        # milliseconds
@@ -229,6 +231,11 @@ function parseIMUData(buffer: ArrayBuffer): IMUData {
     const gyroZ = view.getFloat32(offset, true); offset += 4;
     const voltageRaw = view.getUint16(offset, true); offset += 2;
     
+    // Calculate actual voltage value
+    // Battery: 501230, 3.7V, 150mAh
+    // Formula: voltageRaw * (3.3 / 1023.0) * 2.0 (3.3V reference, 2:1 voltage divider)
+    const voltage = voltageRaw * (3.3 / 1023.0) * 2.0;
+    
     return {
         timestamp,
         accelX,
@@ -237,7 +244,7 @@ function parseIMUData(buffer: ArrayBuffer): IMUData {
         gyroX,
         gyroY,
         gyroZ,
-        voltage: voltageRaw / 100.0
+        voltage
     };
 }
 ```
@@ -449,7 +456,10 @@ class BLEIMUReceiver {
     double gyroY = byteData.getFloat32(20, Endian.little);
     double gyroZ = byteData.getFloat32(24, Endian.little);
     int voltageRaw = byteData.getUint16(28, Endian.little);
-    double voltage = voltageRaw / 100.0;
+    // Calculate actual voltage value
+    // Battery: 501230, 3.7V, 150mAh
+    // Formula: voltageRaw * (3.3 / 1023.0) * 2.0 (3.3V reference, 2:1 voltage divider)
+    double voltage = voltageRaw * (3.3 / 1023.0) * 2.0;
     
     Map<String, dynamic> imuData = {
       'timestamp': timestamp,
