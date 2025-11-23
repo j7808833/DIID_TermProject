@@ -22,9 +22,12 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import com.example.smartbadmintonracket.calibration.CalibrationManager;
+
 public class MainActivity extends AppCompatActivity {
     
     private BLEManager bleManager;
+    private CalibrationManager calibrationManager;
     private TextView statusText;
     private TextView dataCountText;
     private TextView timestampText;
@@ -34,6 +37,8 @@ public class MainActivity extends AppCompatActivity {
     private TextView latestDataText;
     private Button scanButton;
     private Button disconnectButton;
+    private Button calibrateButton;
+    private TextView calibrationStatusText;
     
     private int dataCount = 0;
     private boolean isConnected = false;
@@ -59,6 +64,9 @@ public class MainActivity extends AppCompatActivity {
         // 初始化 BLE 管理器
         bleManager = new BLEManager(this);
         
+        // 初始化校正管理器
+        calibrationManager = new CalibrationManager(this);
+        
         // 設定權限請求
         setupPermissionLauncher();
         
@@ -67,6 +75,9 @@ public class MainActivity extends AppCompatActivity {
         
         // 設定按鈕點擊事件
         setupButtonListeners();
+        
+        // 設定校正按鈕
+        setupCalibrationButton();
         
         // 設定 BLE 回調
         setupBLECallbacks();
@@ -82,6 +93,8 @@ public class MainActivity extends AppCompatActivity {
         latestDataText = findViewById(R.id.latestDataText);
         scanButton = findViewById(R.id.scanButton);
         disconnectButton = findViewById(R.id.disconnectButton);
+        calibrateButton = findViewById(R.id.calibrateButton);
+        calibrationStatusText = findViewById(R.id.calibrationStatusText);
     }
     
     private void setupPermissionLauncher() {
@@ -195,11 +208,108 @@ public class MainActivity extends AppCompatActivity {
         });
     }
     
+    private void setupCalibrationButton() {
+        calibrateButton.setOnClickListener(v -> {
+            if (!isConnected) {
+                Toast.makeText(this, "請先連接設備", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            
+            if (calibrationManager.isCalibrating()) {
+                // 取消校正
+                calibrationManager.cancelCalibration();
+                calibrateButton.setText("零點校正");
+                calibrationStatusText.setVisibility(android.view.View.GONE);
+                Toast.makeText(this, "校正已取消", Toast.LENGTH_SHORT).show();
+            } else {
+                // 開始校正
+                showCalibrationDialog();
+            }
+        });
+    }
+    
+    private void showCalibrationDialog() {
+        new android.app.AlertDialog.Builder(this)
+            .setTitle("零點校正")
+            .setMessage("請將球拍靜止平置在平坦表面上，保持不動。\n\n準備好後點擊「開始校正」")
+            .setPositiveButton("開始校正", (dialog, which) -> {
+                startCalibration();
+            })
+            .setNegativeButton("取消", null)
+            .show();
+    }
+    
+    private void startCalibration() {
+        calibrationManager.startCalibration(new CalibrationManager.CalibrationCallback() {
+            @Override
+            public void onProgress(int current, int total) {
+                runOnUiThread(() -> {
+                    int progress = (current * 100) / total;
+                    calibrationStatusText.setText(
+                        String.format("校正中... %d/%d (%d%%)", current, total, progress)
+                    );
+                    calibrationStatusText.setVisibility(android.view.View.VISIBLE);
+                    calibrateButton.setText("取消校正");
+                });
+            }
+            
+            @Override
+            public void onComplete(com.example.smartbadmintonracket.calibration.CalibrationData calibrationData) {
+                runOnUiThread(() -> {
+                    calibrationStatusText.setText("校正完成！");
+                    calibrationStatusText.setTextColor(0xFF4CAF50); // 綠色
+                    calibrateButton.setText("零點校正");
+                    
+                    Toast.makeText(MainActivity.this, 
+                        "校正完成！\n" + calibrationData.toString(), 
+                        Toast.LENGTH_LONG).show();
+                    
+                    // 3 秒後隱藏狀態文字
+                    new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+                        calibrationStatusText.setVisibility(android.view.View.GONE);
+                        calibrationStatusText.setTextColor(0xFFFF9800); // 恢復橙色
+                    }, 3000);
+                });
+            }
+            
+            @Override
+            public void onError(String error) {
+                runOnUiThread(() -> {
+                    calibrationStatusText.setText("校正失敗: " + error);
+                    calibrationStatusText.setTextColor(0xFFF44336); // 紅色
+                    calibrateButton.setText("零點校正");
+                    
+                    Toast.makeText(MainActivity.this, "校正失敗: " + error, Toast.LENGTH_LONG).show();
+                    
+                    // 3 秒後隱藏狀態文字
+                    new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+                        calibrationStatusText.setVisibility(android.view.View.GONE);
+                        calibrationStatusText.setTextColor(0xFFFF9800); // 恢復橙色
+                    }, 3000);
+                });
+            }
+        });
+        
+        calibrationStatusText.setVisibility(android.view.View.VISIBLE);
+        calibrationStatusText.setText("請保持球拍靜止...");
+        calibrateButton.setText("取消校正");
+    }
+    
     private void setupBLECallbacks() {
         bleManager.setDataCallback(data -> {
             runOnUiThread(() -> {
+                // 如果正在校正，將資料加入校正樣本
+                if (calibrationManager != null && calibrationManager.isCalibrating()) {
+                    calibrationManager.addCalibrationSample(data);
+                }
+                
+                // 應用校正（如果有校正資料）
+                IMUData calibratedData = calibrationManager != null 
+                    ? calibrationManager.applyCalibration(data) 
+                    : data;
+                
                 dataCount++;
-                updateDataDisplay(data);
+                updateDataDisplay(calibratedData);
                 updateDataCount();
             });
         });

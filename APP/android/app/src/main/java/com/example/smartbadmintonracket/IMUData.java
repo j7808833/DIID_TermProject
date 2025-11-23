@@ -30,6 +30,19 @@ public class IMUData {
         this.voltage = voltage;
         this.receivedAt = System.currentTimeMillis();
     }
+    
+    public IMUData(long timestamp, float accelX, float accelY, float accelZ,
+                   float gyroX, float gyroY, float gyroZ, float voltage, long receivedAt) {
+        this.timestamp = timestamp;
+        this.accelX = accelX;
+        this.accelY = accelY;
+        this.accelZ = accelZ;
+        this.gyroX = gyroX;
+        this.gyroY = gyroY;
+        this.gyroZ = gyroZ;
+        this.voltage = voltage;
+        this.receivedAt = receivedAt;
+    }
 
     @Override
     public String toString() {

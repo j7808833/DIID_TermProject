@@ -57,6 +57,31 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="8dp" />
 
+    <!-- 零點校正按鈕 -->
+    <Button
+        android:id="@+id/calibrateButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="零點校正"
+        app:layout_constraintTop_toBottomOf="@id/disconnectButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp" />
+
+    <!-- 校正狀態/進度 -->
+    <TextView
+        android:id="@+id/calibrationStatusText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="14sp"
+        android:textColor="#FF9800"
+        app:layout_constraintTop_toBottomOf="@id/calibrateButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp"
+        android:visibility="gone" />
+
     <!-- 資料計數 -->
     <TextView
         android:id="@+id/dataCountText"
@@ -64,8 +89,9 @@
         android:layout_height="wrap_content"
         android:text="接收資料數: 0"
         android:textSize="14sp"
-        app:layout_constraintTop_toBottomOf="@id/disconnectButton"
+        app:layout_constraintTop_toBottomOf="@id/calibrationStatusText"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="16dp" />
 
     <!-- 分隔線 -->
@@ -77,7 +103,9 @@
         app:layout_constraintTop_toBottomOf="@id/dataCountText"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp" />
+        app:layout_constraintBottom_toTopOf="@id/scrollView"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp" />
 
     <!-- 資料顯示區域（可滾動） -->
     <ScrollView
