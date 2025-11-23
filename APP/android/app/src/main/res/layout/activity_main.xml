@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    tools:context=".MainActivity">
+
+    <!-- 標題 -->
+    <TextView
+        android:id="@+id/titleText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="智能羽毛球拍 IMU 接收器"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp" />
+
+    <!-- 連接狀態 -->
+    <TextView
+        android:id="@+id/statusText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="狀態: 未連接"
+        android:textSize="16sp"
+        android:textColor="#FF0000"
+        app:layout_constraintTop_toBottomOf="@id/titleText"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp" />
+
+    <!-- 掃描/連接按鈕 -->
+    <Button
+        android:id="@+id/scanButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="掃描並連接"
+        app:layout_constraintTop_toBottomOf="@id/statusText"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp" />
+
+    <!-- 斷開連接按鈕 -->
+    <Button
+        android:id="@+id/disconnectButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="斷開連接"
+        android:enabled="false"
+        app:layout_constraintTop_toBottomOf="@id/scanButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp" />
+
+    <!-- 資料計數 -->
+    <TextView
+        android:id="@+id/dataCountText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="接收資料數: 0"
+        android:textSize="14sp"
+        app:layout_constraintTop_toBottomOf="@id/disconnectButton"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="16dp" />
+
+    <!-- 分隔線 -->
+    <View
+        android:id="@+id/divider"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:background="#CCCCCC"
+        app:layout_constraintTop_toBottomOf="@id/dataCountText"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp" />
+
+    <!-- 資料顯示區域（可滾動） -->
+    <ScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@id/divider"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- 時間戳記 -->
+            <TextView
+                android:id="@+id/timestampText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="時間戳記: --"
+                android:textSize="14sp"
+                android:layout_marginBottom="8dp" />
+
+            <!-- 加速度 -->
+            <TextView
+                android:id="@+id/accelText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="加速度 (g):\nX: --\nY: --\nZ: --"
+                android:textSize="14sp"
+                android:layout_marginBottom="8dp" />
+
+            <!-- 角速度 -->
+            <TextView
+                android:id="@+id/gyroText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="角速度 (dps):\nX: --\nY: --\nZ: --"
+                android:textSize="14sp"
+                android:layout_marginBottom="8dp" />
+
+            <!-- 電壓 -->
+            <TextView
+                android:id="@+id/voltageText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="電壓: -- V"
+                android:textSize="14sp"
+                android:layout_marginBottom="8dp" />
+
+            <!-- 最新資料（完整資訊） -->
+            <TextView
+                android:id="@+id/latestDataText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="最新資料:\n--"
+                android:textSize="12sp"
+                android:fontFamily="monospace"
+                android:background="#F5F5F5"
+                android:padding="8dp"
+                android:layout_marginTop="8dp" />
+
+        </LinearLayout>
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
