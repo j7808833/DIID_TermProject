@@ -20,22 +20,35 @@
 
 ## 系統概述
 
-本系統是一個智能羽毛球拍感測器，透過內嵌於球拍手柄的 IMU（慣性測量單元）感測器，即時採集球拍揮動時的加速度和角速度資料，透過 BLE（藍牙低功耗）傳輸至手機 App，再經由 WiFi 上傳至伺服器資料庫，最後用於 AI 模型訓練，以識別不同的球路（如殺球、抽球、其他等）。
+本系統是一個智能羽毛球拍感測器，透過內嵌於球拍手柄的 IMU（慣性測量單元）感測器，即時採集球拍揮動時的加速度和角速度資料，透過 BLE（藍牙低功耗）傳輸至手機 App，再經由 WiFi 上傳至伺服器資料庫，最後用於 AI 模型訓練，以識別不同的球路。
 
 ### 核心功能流程
 
 ```
-羽球拍感測器 → BLE傳輸 → 手機App（收集資料+展示結果） → WiFi上傳 → 伺服器資料庫 → AI訓練 → 球路識別
+羽球拍感測器 → BLE傳輸 → 手機App → 零點校正 → 即時顯示 → 曲線圖視覺化 → Firebase上傳 → 遠端AI辨識 → 結果顯示
 ```
 
-### 展示功能說明
+### 手機App核心功能
 
-本系統在展示時將使用相同的硬體設備進行揮拍測試，所有測試結果將直接在手機App上即時顯示：
+Android 手機 App 提供以下核心功能：
 
-- **即時資料收集**：手機App持續接收BLE傳輸的IMU資料
-- **即時結果展示**：AI模型推理結果直接在手機螢幕上顯示
-- **視覺化呈現**：提供圖表、動畫等多種展示方式
-- **測試記錄**：保存每次揮拍的測試結果供後續查看
+1. **BLE 連接管理**：連接特定球拍設備（SmartRacket）
+2. **零點校正功能**：手動校正，將靜止平置時的感測器讀數歸零
+3. **即時資料顯示**：即時顯示六軸感測器數值
+4. **曲線圖視覺化**：以 100ms 為單位顯示六軸曲線圖
+5. **Firebase 資料上傳**：批次上傳校正後的資料用於 AI 訓練
+6. **遠端 AI 辨識**：接收伺服器辨識結果（5種姿態 + 殺球球速）
+
+### 球路識別類型
+
+系統可識別 **5 種球路類型**：
+- **smash** - 殺球
+- **drive** - 抽球
+- **toss** - 挑球
+- **drop** - 吊球
+- **other** - 其他
+
+此外，對於殺球動作，系統會計算並顯示**球速**。
 
 ---
 
@@ -666,40 +679,68 @@ class StrokeResultPage extends StatelessWidget {
 └─────────────────────────────────┘
 ```
 
-#### 5. 圖表視覺化建議
+#### 5. 圖表視覺化規格
 
-**即時波形圖（fl_chart）**
-```dart
-import 'package:fl_chart/fl_chart.dart';
+**圖表需求**：
+- **時間範圍**：最近 5 秒的資料
+- **更新頻率**：每 100ms 更新一次（從 50Hz 降採樣）
+- **圖表數量**：6 個獨立圖表（每個軸一個）
+- **圖表類型**：折線圖
 
-Widget buildRealTimeChart(List<IMUData> data) {
-  return LineChart(
-    LineChartData(
-      lineBarsData: [
-        LineChartBarData(
-          spots: data.map((d) => FlSpot(
-            d.timestamp.toDouble(),
-            d.gyroY,
-          )).toList(),
-          isCurved: true,
-          color: Colors.blue,
-          barWidth: 2,
-        ),
-      ],
-      titlesData: FlTitlesData(
-        show: true,
-        bottomTitles: AxisTitles(
-          sideTitles: SideTitles(showTitles: true),
-        ),
-      ),
-    ),
-  );
+**資料降採樣**：
+由於資料以 50Hz（每 20ms）到達，但圖表以 10Hz（每 100ms）更新，需要降採樣：
+- 每 5 筆資料取 1 筆（50Hz / 5 = 10Hz）
+- 這樣我們在 5 秒內有 50 個資料點（10Hz * 5s = 50 點）
+
+**圖表實現（Android - MPAndroidChart）**：
+```java
+public class ChartManager {
+    private static final int MAX_DATA_POINTS = 50;  // 10Hz * 5秒
+    private static final int DOWNSAMPLE_FACTOR = 5;  // 50Hz -> 10Hz
+    
+    private List<IMUData> chartData = new ArrayList<>();
+    private int sampleCounter = 0;
+    
+    public void addData(IMUData data) {
+        sampleCounter++;
+        
+        // 降採樣：每 5 筆資料取 1 筆
+        if (sampleCounter % DOWNSAMPLE_FACTOR == 0) {
+            chartData.add(data);
+            
+            // 維持資料點限制
+            if (chartData.size() > MAX_DATA_POINTS) {
+                chartData.remove(0);
+            }
+            
+            // 更新圖表
+            updateCharts();
+        }
+    }
+    
+    private void updateCharts() {
+        // 使用新資料更新所有 6 個圖表
+        accelXChart.updateData(chartData, IMUData::getAccelX);
+        accelYChart.updateData(chartData, IMUData::getAccelY);
+        accelZChart.updateData(chartData, IMUData::getAccelZ);
+        gyroXChart.updateData(chartData, IMUData::getGyroX);
+        gyroYChart.updateData(chartData, IMUData::getGyroY);
+        gyroZChart.updateData(chartData, IMUData::getGyroZ);
+    }
 }
 ```
 
-**三軸加速度/角速度顯示**
-- 使用3D指標球或2D平面投影顯示球拍姿態
-- 實時更新，提供視覺回饋
+**圖表樣式**：
+- 每個軸使用不同顏色：
+  - 加速度 X：紅色（#F44336）
+  - 加速度 Y：綠色（#4CAF50）
+  - 加速度 Z：藍色（#2196F3）
+  - 角速度 X：橙色（#FF9800）
+  - 角速度 Y：紫色（#9C27B0）
+  - 角速度 Z：青色（#009688）
+- 平滑曲線
+- 網格線以提高可讀性
+- 軸標籤和單位
 
 #### 6. 動畫效果建議
 
@@ -795,21 +836,32 @@ class TestSessionState {
 
 ---
 
-## 姿態校正功能
+## 零點校正功能
 
 ### 功能必要性說明
 
-姿態校正是確保AI模型準確識別的重要功能，因為：
+零點校正是確保感測器讀數準確和AI模型準確識別的重要功能，因為：
 
 1. **感測器安裝差異**：不同球拍或不同安裝角度會導致感測器座標系與實際揮拍動作座標系不一致
-2. **個人揮拍習慣**：不同使用者的揮拍姿勢和握拍方式可能有差異
-3. **提高識別準確度**：經過校正後的資料能顯著提升AI模型的識別準確率
+2. **感測器偏移**：IMU 感測器本身具有固有偏移量，需要補償
+3. **重力補償**：當球拍靜止平置時，Z 軸應該讀取約 1g（重力），而不是 0
+4. **提高識別準確度**：經過校正後的資料能顯著提升AI模型的識別準確率
+
+### 校正原理
+
+當球拍靜止平置時：
+- **加速度計**：
+  - X 軸：應為 0（校正後）
+  - Y 軸：應為 0（校正後）
+  - Z 軸：靜止時約為 1g（重力），因此需要減去 1g 才能得到 0
+- **陀螺儀**：
+  - X/Y/Z 軸：應全部為 0（校正後）
 
 ### 校正流程設計
 
 #### 1. 校正模式觸發
 
-建議在主介面設置中提供「校正姿態」選項：
+在主介面提供「零點校正」按鈕：
 
 ```dart
 class SettingsPage extends StatelessWidget {
@@ -924,27 +976,17 @@ class _CalibrationPageState extends State<CalibrationPage> {
     // 計算平均值作為偏移量
     double accelXOffset = samples.map((s) => s.accelX).reduce((a, b) => a + b) / samples.length;
     double accelYOffset = samples.map((s) => s.accelY).reduce((a, b) => a + b) / samples.length;
-    double accelZOffset = samples.map((s) => s.accelZ).reduce((a, b) => a + b) / samples.length;
+    double accelZMean = samples.map((s) => s.accelZ).reduce((a, b) => a + b) / samples.length;
+    // Z 軸偏移量：從平均值中減去 1g（重力）
+    double accelZOffset = accelZMean - 1.0;
     
     double gyroXOffset = samples.map((s) => s.gyroX).reduce((a, b) => a + b) / samples.length;
     double gyroYOffset = samples.map((s) => s.gyroY).reduce((a, b) => a + b) / samples.length;
     double gyroZOffset = samples.map((s) => s.gyroZ).reduce((a, b) => a + b) / samples.length;
     
-    // 計算重力方向（用於座標系轉換）
-    double gravityMagnitude = sqrt(
-      pow(accelXOffset, 2) + 
-      pow(accelYOffset, 2) + 
-      pow(accelZOffset, 2)
-    );
-    
     return CalibrationData(
       accelOffset: Offset3D(accelXOffset, accelYOffset, accelZOffset),
       gyroOffset: Offset3D(gyroXOffset, gyroYOffset, gyroZOffset),
-      gravityDirection: Vector3D(
-        accelXOffset / gravityMagnitude,
-        accelYOffset / gravityMagnitude,
-        accelZOffset / gravityMagnitude,
-      ),
     );
   }
 }
@@ -965,78 +1007,73 @@ class _CalibrationPageState extends State<CalibrationPage> {
 
 #### 3. 校正資料應用
 
-校正後的資料需要在資料處理時應用：
+校正後的資料需要應用到所有接收到的資料：
 
-```dart
-class CalibratedIMUProcessor {
-  CalibrationData? calibrationData;
-  
-  IMUData applyCalibration(IMUData rawData) {
-    if (calibrationData == null) {
-      return rawData; // 未校正則返回原始資料
-    }
+```java
+public class CalibrationManager {
+    private CalibrationData calibrationData;
     
-    return IMUData(
-      timestamp: rawData.timestamp,
-      // 減去偏移量
-      accelX: rawData.accelX - calibrationData!.accelOffset.x,
-      accelY: rawData.accelY - calibrationData!.accelOffset.y,
-      accelZ: rawData.accelZ - calibrationData!.accelOffset.z,
-      
-      gyroX: rawData.gyroX - calibrationData!.gyroOffset.x,
-      gyroY: rawData.gyroY - calibrationData!.gyroOffset.y,
-      gyroZ: rawData.gyroZ - calibrationData!.gyroOffset.z,
-      
-      voltage: rawData.voltage,
-    );
-  }
-  
-  // 座標系轉換（可選，根據需求實現）
-  IMUData transformCoordinate(IMUData calibratedData) {
-    // 根據重力方向進行座標系旋轉
-    // 實現細節依需求而定
-    return calibratedData;
-  }
+    public IMUData applyCalibration(IMUData rawData) {
+        if (calibrationData == null) {
+            return rawData; // 未校正則返回原始資料
+        }
+        
+        return new IMUData(
+            rawData.timestamp,
+            rawData.accelX - calibrationData.accelXOffset,
+            rawData.accelY - calibrationData.accelYOffset,
+            rawData.accelZ - calibrationData.accelZOffset,
+            rawData.gyroX - calibrationData.gyroXOffset,
+            rawData.gyroY - calibrationData.gyroYOffset,
+            rawData.gyroZ - calibrationData.gyroZOffset,
+            rawData.voltage
+        );
+    }
 }
 ```
 
+**重要注意事項**：
+- 所有顯示的資料都應該經過校正
+- 所有上傳的資料都應該經過校正
+- 校正值儲存在本地，App 重啟後仍然有效
+
 #### 4. 校正資料儲存
 
-使用本地儲存保存校正參數：
+使用 SharedPreferences 保存校正參數：
 
-```dart
-class CalibrationStorage {
-  static const String calibrationKey = 'imu_calibration_data';
-  
-  Future<void> saveCalibration(CalibrationData data) async {
-    final prefs = await SharedPreferences.getInstance();
-    final jsonString = jsonEncode(data.toJson());
-    await prefs.setString(calibrationKey, jsonString);
-  }
-  
-  Future<CalibrationData?> loadCalibration() async {
-    final prefs = await SharedPreferences.getInstance();
-    final jsonString = prefs.getString(calibrationKey);
+```java
+public class CalibrationStorage {
+    private static final String CALIBRATION_KEY = "imu_calibration_data";
+    private SharedPreferences prefs;
     
-    if (jsonString == null) return null;
+    public void saveCalibration(CalibrationData data) {
+        SharedPreferences.Editor editor = prefs.edit();
+        Gson gson = new Gson();
+        String json = gson.toJson(data);
+        editor.putString(CALIBRATION_KEY, json);
+        editor.apply();
+    }
     
-    final json = jsonDecode(jsonString);
-    return CalibrationData.fromJson(json);
-  }
-  
-  Future<void> clearCalibration() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(calibrationKey);
-  }
+    public CalibrationData loadCalibration() {
+        String json = prefs.getString(CALIBRATION_KEY, null);
+        if (json == null) return null;
+        
+        Gson gson = new Gson();
+        return gson.fromJson(json, CalibrationData.class);
+    }
+    
+    public void clearCalibration() {
+        prefs.edit().remove(CALIBRATION_KEY).apply();
+    }
 }
 ```
 
 ### 校正時機建議
 
-1. **首次使用**：App首次啟動時提示使用者進行校正
+1. **手動觸發**：使用者可隨時點擊「零點校正」按鈕進行校正
 2. **更換設備**：更換球拍或重新安裝感測器後
-3. **定期校正**：建議每次使用前校正（可在設定中選擇是否自動提示）
-4. **手動觸發**：使用者可在設定中隨時重新校正
+3. **定期校正**：當感測器讀數似乎不準確時建議校正
+4. **校正持久性**：校正值儲存在本地，App 重啟後仍然有效
 
 ### 校正驗證
 
@@ -1075,111 +1112,104 @@ bool validateCalibration(CalibrationData calData) {
 
 ---
 
-## WiFi 資料傳輸至伺服器
+## Firebase 資料傳輸
 
 ### 資料上傳策略
 
-#### 1. 即時上傳（推薦用於訓練資料收集）
+#### 1. 批次上傳（推薦用於訓練資料收集）
 
-每收到一筆資料立即上傳至伺服器：
+批次上傳資料至 Firebase Firestore：
 
-```dart
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-
-class DataUploader {
-  static const String serverUrl = "https://your-server.com/api/imu-data";
-  
-  // 單筆資料上傳
-  Future<bool> uploadSingleData(Map<String, dynamic> data) async {
-    try {
-      final response = await http.post(
-        Uri.parse(serverUrl),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'device_id': 'SmartRacket_001', // 設備識別碼
-          'timestamp': data['timestamp'],
-          'accelX': data['accelX'],
-          'accelY': data['accelY'],
-          'accelZ': data['accelZ'],
-          'gyroX': data['gyroX'],
-          'gyroY': data['gyroY'],
-          'gyroZ': data['gyroZ'],
-          'voltage': data['voltage'],
-          'received_at': data['receivedAt'],
-        }),
-      );
-      
-      return response.statusCode == 200;
-    } catch (e) {
-      print("上傳失敗: $e");
-      return false;
+```java
+public class FirebaseManager {
+    private Firestore db;
+    private List<IMUData> pendingData = new ArrayList<>();
+    private Handler uploadHandler;
+    private static final int UPLOAD_INTERVAL = 5000;  // 5 秒
+    private static final int BATCH_SIZE = 100;        // 100 筆資料
+    private long lastUploadTime = 0;
+    private boolean isRecordingMode = false;
+    
+    public void initialize() {
+        db = FirebaseFirestore.getInstance();
+        uploadHandler = new Handler(Looper.getMainLooper());
     }
-  }
-  
-  // 批次上傳（用於離線緩存資料）
-  Future<bool> uploadBatchData(List<Map<String, dynamic>> dataList) async {
-    try {
-      final response = await http.post(
-        Uri.parse("$serverUrl/batch"),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'device_id': 'SmartRacket_001',
-          'data': dataList,
-        }),
-      );
-      
-      return response.statusCode == 200;
-    } catch (e) {
-      print("批次上傳失敗: $e");
-      return false;
+    
+    public void addData(IMUData data) {
+        if (!isRecordingMode) {
+            return;  // 僅在錄製模式下上傳
+        }
+        
+        pendingData.add(data);
+        checkUploadCondition();
     }
-  }
+    
+    private void checkUploadCondition() {
+        long currentTime = System.currentTimeMillis();
+        boolean timeCondition = (currentTime - lastUploadTime) >= UPLOAD_INTERVAL;
+        boolean sizeCondition = pendingData.size() >= BATCH_SIZE;
+        
+        if (timeCondition || sizeCondition) {
+            uploadBatch();
+        }
+    }
+    
+    private void uploadBatch() {
+        if (pendingData.isEmpty()) return;
+        
+        List<IMUData> dataToUpload = new ArrayList<>(pendingData);
+        pendingData.clear();
+        lastUploadTime = System.currentTimeMillis();
+        
+        // 上傳至 Firestore
+        for (IMUData data : dataToUpload) {
+            Map<String, Object> docData = new HashMap<>();
+            docData.put("device_id", "SmartRacket_001");
+            docData.put("session_id", getCurrentSessionId());
+            docData.put("timestamp", data.timestamp);
+            docData.put("accelX", data.accelX);
+            docData.put("accelY", data.accelY);
+            docData.put("accelZ", data.accelZ);
+            docData.put("gyroX", data.gyroX);
+            docData.put("gyroY", data.gyroY);
+            docData.put("gyroZ", data.gyroZ);
+            docData.put("voltage", data.voltage);
+            docData.put("received_at", data.receivedAt);
+            docData.put("calibrated", true);
+            docData.put("uploaded_at", FieldValue.serverTimestamp());
+            
+            db.collection("imu_data")
+                .add(docData)
+                .addOnSuccessListener(documentReference -> {
+                    Log.d(TAG, "資料已上傳: " + documentReference.getId());
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "上傳失敗", e);
+                    // 儲存至本地資料庫以便重試
+                    saveToLocalDatabase(dataToUpload);
+                });
+        }
+    }
+    
+    public void setRecordingMode(boolean enabled) {
+        this.isRecordingMode = enabled;
+    }
 }
 ```
 
-#### 2. 批次上傳（節省網路資源）
+#### 2. 上傳模式控制
 
-將資料暫存本地，定期批量上傳：
+資料上傳僅在**錄製/測試模式**下進行：
 
-```dart
-class BatchUploadManager {
-  List<Map<String, dynamic>> pendingData = [];
-  Timer? uploadTimer;
-  
-  void startBatchUpload() {
-    // 每10秒上傳一次
-    uploadTimer = Timer.periodic(Duration(seconds: 10), (timer) {
-      if (pendingData.isNotEmpty) {
-        _uploadBatch();
-      }
-    });
-  }
-  
-  void addData(Map<String, dynamic> data) {
-    pendingData.add(data);
-    
-    // 如果緩存超過500筆，立即上傳
-    if (pendingData.length >= 500) {
-      _uploadBatch();
-    }
-  }
-  
-  Future<void> _uploadBatch() async {
-    if (pendingData.isEmpty) return;
-    
-    List<Map<String, dynamic>> dataToUpload = List.from(pendingData);
-    pendingData.clear();
-    
-    bool success = await DataUploader().uploadBatchData(dataToUpload);
-    
-    if (!success) {
-      // 上傳失敗，重新加入待上傳列表
-      pendingData.insertAll(0, dataToUpload);
-    }
-  }
-}
-```
+- **錄製模式開啟**：資料被收集並上傳至 Firebase
+- **錄製模式關閉**：資料僅顯示，不上傳
+- 使用者可以透過「開始錄製」/「停止錄製」按鈕切換錄製模式
+
+### 上傳觸發條件
+
+當**任一**條件滿足時觸發上傳：
+1. **時間條件**：距離上次上傳已過 5 秒
+2. **數量條件**：已累積 100 筆資料
 
 ### 離線資料緩存
 
@@ -1895,11 +1925,14 @@ bool validateData(Map<String, dynamic> data) {
 
 ---
 
-**文件版本**: v1.1  
-**最後更新**: 2025年11月  
+**文件版本**: v1.2  
+**最後更新**: 2024年11月  
 **維護者**: DIID Term Project Team  
 **更新內容**: 
 - 新增手機App結果展示與UI設計章節
-- 新增姿態校正功能章節
-- 更新系統概述，說明展示功能需求
+- 更新零點校正功能章節（Android 實現）
+- 新增曲線圖視覺化規格（6個獨立圖表，100ms更新）
+- 更新 Firebase 資料傳輸章節（批次上傳，錄製模式）
+- 新增遠端 AI 辨識章節（5種球路類型，殺球球速計算）
+- 更新系統概述，包含所有核心功能
 

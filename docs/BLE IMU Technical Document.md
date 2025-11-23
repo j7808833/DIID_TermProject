@@ -20,22 +20,35 @@
 
 ## System Overview
 
-This system is an intelligent badminton racket sensor that uses an IMU (Inertial Measurement Unit) sensor embedded in the racket handle to collect acceleration and angular velocity data in real-time during racket swings. The data is transmitted to a mobile App via BLE (Bluetooth Low Energy), then uploaded to a server database via WiFi, and finally used for AI model training to identify different stroke types (such as smash, drive, and others).
+This system is an intelligent badminton racket sensor that uses an IMU (Inertial Measurement Unit) sensor embedded in the racket handle to collect acceleration and angular velocity data in real-time during racket swings. The data is transmitted to a mobile App via BLE (Bluetooth Low Energy), then uploaded to a server database via WiFi, and finally used for AI model training to identify different stroke types.
 
 ### Core Function Flow
 
 ```
-Badminton Racket Sensor → BLE Transmission → Mobile App (Data Collection + Results Display) → WiFi Upload → Server Database → AI Training → Stroke Recognition
+Badminton Racket Sensor → BLE Transmission → Mobile App → Zero-Point Calibration → Real-time Display → Chart Visualization → Firebase Upload → Remote AI Recognition → Results Display
 ```
 
-### Demo Function Description
+### Mobile App Core Features
 
-During demonstrations, the system will use the same hardware equipment for stroke testing, and all test results will be displayed in real-time directly on the mobile App:
+The Android mobile App provides the following key features:
 
-- **Real-time Data Collection**: The mobile App continuously receives IMU data transmitted via BLE
-- **Real-time Results Display**: AI model inference results are displayed directly on the mobile screen
-- **Visualization**: Provides various display methods such as charts and animations
-- **Test Records**: Saves test results for each stroke for later viewing
+1. **BLE Connection Management**: Connect to specific racket device (SmartRacket)
+2. **Zero-Point Calibration**: Manual calibration to zero sensor readings when racket is stationary
+3. **Real-time Data Display**: Display six-axis sensor values in real-time
+4. **Chart Visualization**: Display six-axis curves with 100ms sampling interval
+5. **Firebase Data Upload**: Batch upload calibrated data for AI training
+6. **Remote AI Recognition**: Receive recognition results from server (5 stroke types + smash speed)
+
+### Stroke Recognition Types
+
+The system recognizes **5 stroke types**:
+- **smash** - Smash shot
+- **drive** - Drive shot
+- **toss** - Toss shot
+- **drop** - Drop shot
+- **other** - Other strokes
+
+Additionally, for smash shots, the system calculates and displays the **ball speed**.
 
 ---
 
@@ -667,40 +680,68 @@ Display list of all test records:
 └─────────────────────────────────┘
 ```
 
-#### 5. Chart Visualization Recommendations
+#### 5. Chart Visualization Specifications
 
-**Real-time Waveform Chart (fl_chart)**
-```dart
-import 'package:fl_chart/fl_chart.dart';
+**Chart Requirements**:
+- **Time Range**: Last 5 seconds of data
+- **Update Frequency**: Every 100ms (downsampled from 50Hz)
+- **Chart Count**: 6 independent charts (one for each axis)
+- **Chart Type**: Line Chart
 
-Widget buildRealTimeChart(List<IMUData> data) {
-  return LineChart(
-    LineChartData(
-      lineBarsData: [
-        LineChartBarData(
-          spots: data.map((d) => FlSpot(
-            d.timestamp.toDouble(),
-            d.gyroY,
-          )).toList(),
-          isCurved: true,
-          color: Colors.blue,
-          barWidth: 2,
-        ),
-      ],
-      titlesData: FlTitlesData(
-        show: true,
-        bottomTitles: AxisTitles(
-          sideTitles: SideTitles(showTitles: true),
-        ),
-      ),
-    ),
-  );
+**Data Downsampling**:
+Since data arrives at 50Hz (every 20ms), but charts update at 10Hz (every 100ms), we need to downsample:
+- Take 1 data point every 5 data points (50Hz / 5 = 10Hz)
+- This gives us 50 data points for 5 seconds (10Hz * 5s = 50 points)
+
+**Chart Implementation (Android - MPAndroidChart)**:
+```java
+public class ChartManager {
+    private static final int MAX_DATA_POINTS = 50;  // 5 seconds at 10Hz
+    private static final int DOWNSAMPLE_FACTOR = 5;  // 50Hz -> 10Hz
+    
+    private List<IMUData> chartData = new ArrayList<>();
+    private int sampleCounter = 0;
+    
+    public void addData(IMUData data) {
+        sampleCounter++;
+        
+        // Downsample: take 1 point every 5 points
+        if (sampleCounter % DOWNSAMPLE_FACTOR == 0) {
+            chartData.add(data);
+            
+            // Maintain data point limit
+            if (chartData.size() > MAX_DATA_POINTS) {
+                chartData.remove(0);
+            }
+            
+            // Update charts
+            updateCharts();
+        }
+    }
+    
+    private void updateCharts() {
+        // Update all 6 charts with new data
+        accelXChart.updateData(chartData, IMUData::getAccelX);
+        accelYChart.updateData(chartData, IMUData::getAccelY);
+        accelZChart.updateData(chartData, IMUData::getAccelZ);
+        gyroXChart.updateData(chartData, IMUData::getGyroX);
+        gyroYChart.updateData(chartData, IMUData::getGyroY);
+        gyroZChart.updateData(chartData, IMUData::getGyroZ);
+    }
 }
 ```
 
-**Three-axis Acceleration/Angular Velocity Display**
-- Use 3D indicator sphere or 2D plane projection to display racket pose
-- Real-time update, providing visual feedback
+**Chart Styling**:
+- Each axis uses a different color:
+  - Acceleration X: Red (#F44336)
+  - Acceleration Y: Green (#4CAF50)
+  - Acceleration Z: Blue (#2196F3)
+  - Gyro X: Orange (#FF9800)
+  - Gyro Y: Purple (#9C27B0)
+  - Gyro Z: Teal (#009688)
+- Smooth line curves
+- Grid lines for readability
+- Axis labels with units
 
 #### 6. Animation Effect Recommendations
 
@@ -796,21 +837,32 @@ class TestSessionState {
 
 ---
 
-## Pose Calibration Function
+## Zero-Point Calibration Function
 
 ### Function Necessity Description
 
-Pose calibration is an important function to ensure accurate AI model recognition because:
+Zero-point calibration is an important function to ensure accurate sensor readings and AI model recognition because:
 
 1. **Sensor Installation Differences**: Different rackets or different installation angles will cause sensor coordinate system to be inconsistent with actual stroke action coordinate system
-2. **Individual Stroke Habits**: Different users' stroke postures and grip styles may differ
-3. **Improve Recognition Accuracy**: Calibrated data can significantly improve AI model recognition accuracy
+2. **Sensor Offset**: IMU sensors have inherent offsets that need to be compensated
+3. **Gravity Compensation**: When the racket is stationary and flat, the Z-axis should read approximately 1g (gravity), not 0
+4. **Improve Recognition Accuracy**: Calibrated data can significantly improve AI model recognition accuracy
+
+### Calibration Principle
+
+When the racket is stationary and placed flat:
+- **Accelerometer**: 
+  - X-axis: Should be 0 (after calibration)
+  - Y-axis: Should be 0 (after calibration)
+  - Z-axis: Should be approximately 1g (gravity) when stationary, so we subtract 1g to get 0
+- **Gyroscope**: 
+  - X/Y/Z axes: Should all be 0 (after calibration)
 
 ### Calibration Flow Design
 
 #### 1. Calibration Mode Trigger
 
-It is recommended to provide "Calibrate Pose" option in the main interface settings:
+A "Zero-Point Calibration" button is provided in the main interface:
 
 ```dart
 class SettingsPage extends StatelessWidget {
@@ -927,27 +979,17 @@ class _CalibrationPageState extends State<CalibrationPage> {
     // Calculate average as offset
     double accelXOffset = samples.map((s) => s.accelX).reduce((a, b) => a + b) / samples.length;
     double accelYOffset = samples.map((s) => s.accelY).reduce((a, b) => a + b) / samples.length;
-    double accelZOffset = samples.map((s) => s.accelZ).reduce((a, b) => a + b) / samples.length;
+    double accelZMean = samples.map((s) => s.accelZ).reduce((a, b) => a + b) / samples.length;
+    // Z-axis offset: subtract 1g (gravity) from the mean
+    double accelZOffset = accelZMean - 1.0;
     
     double gyroXOffset = samples.map((s) => s.gyroX).reduce((a, b) => a + b) / samples.length;
     double gyroYOffset = samples.map((s) => s.gyroY).reduce((a, b) => a + b) / samples.length;
     double gyroZOffset = samples.map((s) => s.gyroZ).reduce((a, b) => a + b) / samples.length;
     
-    // Calculate gravity direction (for coordinate system transformation)
-    double gravityMagnitude = sqrt(
-      pow(accelXOffset, 2) + 
-      pow(accelYOffset, 2) + 
-      pow(accelZOffset, 2)
-    );
-    
     return CalibrationData(
       accelOffset: Offset3D(accelXOffset, accelYOffset, accelZOffset),
       gyroOffset: Offset3D(gyroXOffset, gyroYOffset, gyroZOffset),
-      gravityDirection: Vector3D(
-        accelXOffset / gravityMagnitude,
-        accelYOffset / gravityMagnitude,
-        accelZOffset / gravityMagnitude,
-      ),
     );
   }
 }
@@ -968,78 +1010,73 @@ class _CalibrationPageState extends State<CalibrationPage> {
 
 #### 3. Calibration Data Application
 
-Calibrated data needs to be applied during data processing:
+Calibrated data needs to be applied to all received data:
 
-```dart
-class CalibratedIMUProcessor {
-  CalibrationData? calibrationData;
-  
-  IMUData applyCalibration(IMUData rawData) {
-    if (calibrationData == null) {
-      return rawData; // Return original data if not calibrated
-    }
+```java
+public class CalibrationManager {
+    private CalibrationData calibrationData;
     
-    return IMUData(
-      timestamp: rawData.timestamp,
-      // Subtract offset
-      accelX: rawData.accelX - calibrationData!.accelOffset.x,
-      accelY: rawData.accelY - calibrationData!.accelOffset.y,
-      accelZ: rawData.accelZ - calibrationData!.accelOffset.z,
-      
-      gyroX: rawData.gyroX - calibrationData!.gyroOffset.x,
-      gyroY: rawData.gyroY - calibrationData!.gyroOffset.y,
-      gyroZ: rawData.gyroZ - calibrationData!.gyroOffset.z,
-      
-      voltage: rawData.voltage,
-    );
-  }
-  
-  // Coordinate system transformation (optional, implement according to requirements)
-  IMUData transformCoordinate(IMUData calibratedData) {
-    // Rotate coordinate system based on gravity direction
-    // Implementation details depend on requirements
-    return calibratedData;
-  }
+    public IMUData applyCalibration(IMUData rawData) {
+        if (calibrationData == null) {
+            return rawData; // Return original data if not calibrated
+        }
+        
+        return new IMUData(
+            rawData.timestamp,
+            rawData.accelX - calibrationData.accelXOffset,
+            rawData.accelY - calibrationData.accelYOffset,
+            rawData.accelZ - calibrationData.accelZOffset,
+            rawData.gyroX - calibrationData.gyroXOffset,
+            rawData.gyroY - calibrationData.gyroYOffset,
+            rawData.gyroZ - calibrationData.gyroZOffset,
+            rawData.voltage
+        );
+    }
 }
 ```
 
+**Important Notes**:
+- All displayed data should be calibrated
+- All uploaded data should be calibrated
+- Calibration values are stored locally and persist across app restarts
+
 #### 4. Calibration Data Storage
 
-Use local storage to save calibration parameters:
+Use SharedPreferences to save calibration parameters:
 
-```dart
-class CalibrationStorage {
-  static const String calibrationKey = 'imu_calibration_data';
-  
-  Future<void> saveCalibration(CalibrationData data) async {
-    final prefs = await SharedPreferences.getInstance();
-    final jsonString = jsonEncode(data.toJson());
-    await prefs.setString(calibrationKey, jsonString);
-  }
-  
-  Future<CalibrationData?> loadCalibration() async {
-    final prefs = await SharedPreferences.getInstance();
-    final jsonString = prefs.getString(calibrationKey);
+```java
+public class CalibrationStorage {
+    private static final String CALIBRATION_KEY = "imu_calibration_data";
+    private SharedPreferences prefs;
     
-    if (jsonString == null) return null;
+    public void saveCalibration(CalibrationData data) {
+        SharedPreferences.Editor editor = prefs.edit();
+        Gson gson = new Gson();
+        String json = gson.toJson(data);
+        editor.putString(CALIBRATION_KEY, json);
+        editor.apply();
+    }
     
-    final json = jsonDecode(jsonString);
-    return CalibrationData.fromJson(json);
-  }
-  
-  Future<void> clearCalibration() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(calibrationKey);
-  }
+    public CalibrationData loadCalibration() {
+        String json = prefs.getString(CALIBRATION_KEY, null);
+        if (json == null) return null;
+        
+        Gson gson = new Gson();
+        return gson.fromJson(json, CalibrationData.class);
+    }
+    
+    public void clearCalibration() {
+        prefs.edit().remove(CALIBRATION_KEY).apply();
+    }
 }
 ```
 
 ### Calibration Timing Recommendations
 
-1. **First Use**: Prompt user to calibrate when App first launches
+1. **Manual Trigger**: Users can calibrate anytime by clicking the "Zero-Point Calibration" button
 2. **Device Replacement**: After changing racket or reinstalling sensor
-3. **Regular Calibration**: Recommend calibration before each use (can choose whether to auto-prompt in settings)
-4. **Manual Trigger**: Users can recalibrate anytime in settings
+3. **Regular Calibration**: Recommend calibration when sensor readings seem inaccurate
+4. **Calibration Persistence**: Calibration values are saved locally and persist across app restarts
 
 ### Calibration Validation
 
@@ -1078,111 +1115,104 @@ For higher precision, multi-directional calibration can be implemented:
 
 ---
 
-## WiFi Data Transmission to Server
+## Firebase Data Transmission
 
 ### Data Upload Strategy
 
-#### 1. Real-time Upload (Recommended for Training Data Collection)
+#### 1. Batch Upload (Recommended for Training Data Collection)
 
-Upload each data point to server immediately upon receipt:
+Upload data in batches to Firebase Firestore:
 
-```dart
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-
-class DataUploader {
-  static const String serverUrl = "https://your-server.com/api/imu-data";
-  
-  // Single data upload
-  Future<bool> uploadSingleData(Map<String, dynamic> data) async {
-    try {
-      final response = await http.post(
-        Uri.parse(serverUrl),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'device_id': 'SmartRacket_001', // Device identifier
-          'timestamp': data['timestamp'],
-          'accelX': data['accelX'],
-          'accelY': data['accelY'],
-          'accelZ': data['accelZ'],
-          'gyroX': data['gyroX'],
-          'gyroY': data['gyroY'],
-          'gyroZ': data['gyroZ'],
-          'voltage': data['voltage'],
-          'received_at': data['receivedAt'],
-        }),
-      );
-      
-      return response.statusCode == 200;
-    } catch (e) {
-      print("Upload failed: $e");
-      return false;
+```java
+public class FirebaseManager {
+    private Firestore db;
+    private List<IMUData> pendingData = new ArrayList<>();
+    private Handler uploadHandler;
+    private static final int UPLOAD_INTERVAL = 5000;  // 5 seconds
+    private static final int BATCH_SIZE = 100;         // 100 data points
+    private long lastUploadTime = 0;
+    private boolean isRecordingMode = false;
+    
+    public void initialize() {
+        db = FirebaseFirestore.getInstance();
+        uploadHandler = new Handler(Looper.getMainLooper());
     }
-  }
-  
-  // Batch upload (for offline cached data)
-  Future<bool> uploadBatchData(List<Map<String, dynamic>> dataList) async {
-    try {
-      final response = await http.post(
-        Uri.parse("$serverUrl/batch"),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'device_id': 'SmartRacket_001',
-          'data': dataList,
-        }),
-      );
-      
-      return response.statusCode == 200;
-    } catch (e) {
-      print("Batch upload failed: $e");
-      return false;
+    
+    public void addData(IMUData data) {
+        if (!isRecordingMode) {
+            return;  // Only upload in recording mode
+        }
+        
+        pendingData.add(data);
+        checkUploadCondition();
     }
-  }
+    
+    private void checkUploadCondition() {
+        long currentTime = System.currentTimeMillis();
+        boolean timeCondition = (currentTime - lastUploadTime) >= UPLOAD_INTERVAL;
+        boolean sizeCondition = pendingData.size() >= BATCH_SIZE;
+        
+        if (timeCondition || sizeCondition) {
+            uploadBatch();
+        }
+    }
+    
+    private void uploadBatch() {
+        if (pendingData.isEmpty()) return;
+        
+        List<IMUData> dataToUpload = new ArrayList<>(pendingData);
+        pendingData.clear();
+        lastUploadTime = System.currentTimeMillis();
+        
+        // Upload to Firestore
+        for (IMUData data : dataToUpload) {
+            Map<String, Object> docData = new HashMap<>();
+            docData.put("device_id", "SmartRacket_001");
+            docData.put("session_id", getCurrentSessionId());
+            docData.put("timestamp", data.timestamp);
+            docData.put("accelX", data.accelX);
+            docData.put("accelY", data.accelY);
+            docData.put("accelZ", data.accelZ);
+            docData.put("gyroX", data.gyroX);
+            docData.put("gyroY", data.gyroY);
+            docData.put("gyroZ", data.gyroZ);
+            docData.put("voltage", data.voltage);
+            docData.put("received_at", data.receivedAt);
+            docData.put("calibrated", true);
+            docData.put("uploaded_at", FieldValue.serverTimestamp());
+            
+            db.collection("imu_data")
+                .add(docData)
+                .addOnSuccessListener(documentReference -> {
+                    Log.d(TAG, "Data uploaded: " + documentReference.getId());
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Upload failed", e);
+                    // Save to local database for retry
+                    saveToLocalDatabase(dataToUpload);
+                });
+        }
+    }
+    
+    public void setRecordingMode(boolean enabled) {
+        this.isRecordingMode = enabled;
+    }
 }
 ```
 
-#### 2. Batch Upload (Save Network Resources)
+#### 2. Upload Mode Control
 
-Cache data locally, upload in batches periodically:
+Data upload only occurs in **Recording/Test Mode**:
 
-```dart
-class BatchUploadManager {
-  List<Map<String, dynamic>> pendingData = [];
-  Timer? uploadTimer;
-  
-  void startBatchUpload() {
-    // Upload every 10 seconds
-    uploadTimer = Timer.periodic(Duration(seconds: 10), (timer) {
-      if (pendingData.isNotEmpty) {
-        _uploadBatch();
-      }
-    });
-  }
-  
-  void addData(Map<String, dynamic> data) {
-    pendingData.add(data);
-    
-    // Upload immediately if cache exceeds 500 entries
-    if (pendingData.length >= 500) {
-      _uploadBatch();
-    }
-  }
-  
-  Future<void> _uploadBatch() async {
-    if (pendingData.isEmpty) return;
-    
-    List<Map<String, dynamic>> dataToUpload = List.from(pendingData);
-    pendingData.clear();
-    
-    bool success = await DataUploader().uploadBatchData(dataToUpload);
-    
-    if (!success) {
-      // Upload failed, re-add to pending list
-      pendingData.insertAll(0, dataToUpload);
-    }
-  }
-}
-```
+- **Recording Mode ON**: Data is collected and uploaded to Firebase
+- **Recording Mode OFF**: Data is only displayed, not uploaded
+- Users can toggle recording mode with "Start Recording" / "Stop Recording" buttons
+
+### Upload Trigger Conditions
+
+Data is uploaded when **either** condition is met:
+1. **Time Condition**: 5 seconds have passed since last upload
+2. **Size Condition**: 100 data points have been accumulated
 
 ### Offline Data Cache
 
@@ -1618,6 +1648,207 @@ training_data/
 
 ---
 
+## Remote AI Recognition
+
+### Recognition Architecture
+
+The Android App uses **remote AI recognition** instead of local TensorFlow Lite models. The recognition process works as follows:
+
+1. **Action Detection**: The app detects stroke actions based on sensor data peaks
+2. **Data Frame Collection**: When an action is detected, collect 40 data points (0.8 seconds)
+3. **API Request**: Send the data frame to the recognition server via HTTP POST
+4. **Result Display**: Receive and display the recognition results on the mobile screen
+
+### Action Detection
+
+The app detects stroke actions using threshold-based detection:
+
+```java
+public class ActionDetector {
+    private static final double ACCEL_THRESHOLD = 5.0;  // 5g threshold
+    private static final double GYRO_THRESHOLD = 500.0; // 500 dps threshold
+    
+    public boolean detectAction(IMUData data) {
+        // Calculate acceleration magnitude
+        double accelMagnitude = Math.sqrt(
+            data.accelX * data.accelX +
+            data.accelY * data.accelY +
+            data.accelZ * data.accelZ
+        );
+        
+        // Calculate angular velocity magnitude
+        double gyroMagnitude = Math.sqrt(
+            data.gyroX * data.gyroX +
+            data.gyroY * data.gyroY +
+            data.gyroZ * data.gyroZ
+        );
+        
+        return accelMagnitude > ACCEL_THRESHOLD || 
+               gyroMagnitude > GYRO_THRESHOLD;
+    }
+}
+```
+
+### Recognition API
+
+**Endpoint**: `POST /api/v1/recognize`
+
+**Request Format**:
+```json
+{
+  "device_id": "SmartRacket_001",
+  "data_frame": [
+    {
+      "timestamp": 1234567890,
+      "accelX": 0.123,
+      "accelY": -0.456,
+      "accelZ": 0.789,
+      "gyroX": 12.34,
+      "gyroY": -56.78,
+      "gyroZ": 90.12
+    },
+    ... (40 data points)
+  ]
+}
+```
+
+**Response Format**:
+```json
+{
+  "status": "success",
+  "prediction": "smash",
+  "confidence": 0.85,
+  "speed": 120.5
+}
+```
+
+**Response Fields**:
+- `prediction`: One of `smash`, `drive`, `toss`, `drop`, `other`
+- `confidence`: Confidence score (0.0 to 1.0)
+- `speed`: Ball speed in km/h (only for smash shots, null for others)
+
+### Recognition Result Display
+
+**Display Requirements**:
+- Show stroke type name (smash, drive, toss, drop, other)
+- Show confidence as percentage (e.g., 85%)
+- Show ball speed for smash shots (e.g., 120 km/h)
+- Freeze display for 3-5 seconds
+- Use animations (pop-up, fade-in)
+- Color coding:
+  - Smash: Red (#FF4444)
+  - Drive: Blue (#4488FF)
+  - Toss: Green (#4CAF50)
+  - Drop: Orange (#FF9800)
+  - Other: Gray (#888888)
+
+### Smash Speed Calculation
+
+**Suggested Formula**:
+```java
+public double calculateSmashSpeed(List<IMUData> dataFrame) {
+    // Find peak acceleration
+    double maxAccel = 0;
+    for (IMUData data : dataFrame) {
+        double accelMagnitude = Math.sqrt(
+            data.accelX * data.accelX +
+            data.accelY * data.accelY +
+            data.accelZ * data.accelZ
+        );
+        if (accelMagnitude > maxAccel) {
+            maxAccel = accelMagnitude;
+        }
+    }
+    
+    // Simplified formula: speed = sqrt(accel_peak) * k
+    // k is an empirical coefficient, suggested value: 15-20
+    double k = 18.0;  // Adjust based on actual test data
+    double speed = Math.sqrt(maxAccel) * k;
+    
+    return speed;  // Unit: km/h
+}
+```
+
+**Note**: The speed calculation formula should be adjusted based on actual test data. Alternative methods:
+- Method 1: Based on acceleration peak `speed = sqrt(peak_accel) * k`
+- Method 2: Based on acceleration integral `speed = integral(accel) * dt * k`
+- Method 3: Based on angular velocity and racket length `speed = angular_velocity * racket_length * k`
+
+### Recognition Implementation
+
+```java
+public class RecognitionManager {
+    private static final String API_URL = "https://your-server.com/api/v1/recognize";
+    private List<IMUData> dataBuffer = new ArrayList<>();
+    private ActionDetector actionDetector = new ActionDetector();
+    
+    public void processData(IMUData data) {
+        dataBuffer.add(data);
+        
+        // Maintain 40 data points window
+        if (dataBuffer.size() > 40) {
+            dataBuffer.remove(0);
+        }
+        
+        // Detect action
+        if (actionDetector.detectAction(data)) {
+            // Send recognition request
+            requestRecognition(new ArrayList<>(dataBuffer));
+        }
+    }
+    
+    private void requestRecognition(List<IMUData> dataFrame) {
+        // Prepare request data
+        JSONObject request = new JSONObject();
+        request.put("device_id", "SmartRacket_001");
+        
+        JSONArray dataArray = new JSONArray();
+        for (IMUData data : dataFrame) {
+            JSONObject dataPoint = new JSONObject();
+            dataPoint.put("timestamp", data.timestamp);
+            dataPoint.put("accelX", data.accelX);
+            dataPoint.put("accelY", data.accelY);
+            dataPoint.put("accelZ", data.accelZ);
+            dataPoint.put("gyroX", data.gyroX);
+            dataPoint.put("gyroY", data.gyroY);
+            dataPoint.put("gyroZ", data.gyroZ);
+            dataArray.put(dataPoint);
+        }
+        request.put("data_frame", dataArray);
+        
+        // Send HTTP POST request
+        OkHttpClient client = new OkHttpClient();
+        RequestBody body = RequestBody.create(
+            request.toString(),
+            MediaType.parse("application/json")
+        );
+        Request httpRequest = new Request.Builder()
+            .url(API_URL)
+            .post(body)
+            .build();
+        
+        client.newCall(httpRequest).enqueue(new Callback() {
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    String responseBody = response.body().string();
+                    RecognitionResult result = parseResponse(responseBody);
+                    // Update UI on main thread
+                    updateUI(result);
+                }
+            }
+            
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Log.e(TAG, "Recognition request failed", e);
+            }
+        });
+    }
+}
+```
+
+---
+
 ## System Architecture Flowchart
 
 ### Complete Data Flow
@@ -1901,10 +2132,13 @@ For technical issues, please contact the project team or refer to the project RE
 
 ---
 
-**Document Version**: v1.1  
-**Last Updated**: November 2025  
+**Document Version**: v1.2  
+**Last Updated**: November 2024  
 **Maintainer**: DIID Term Project Team  
 **Update Content**: 
 - Added Mobile App Result Display and UI Design chapter
-- Added Attitude Calibration Function chapter
-- Updated System Overview to include demonstration feature requirements  
+- Updated Zero-Point Calibration Function chapter (Android implementation)
+- Added Chart Visualization specifications (6 independent charts, 100ms update)
+- Updated Firebase Data Transmission chapter (batch upload, recording mode)
+- Added Remote AI Recognition chapter (5 stroke types, smash speed calculation)
+- Updated System Overview to include all core features  
