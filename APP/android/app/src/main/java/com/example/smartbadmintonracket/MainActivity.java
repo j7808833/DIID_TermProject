@@ -25,11 +25,14 @@ import java.util.Locale;
 import android.util.Log;
 
 import com.example.smartbadmintonracket.calibration.CalibrationManager;
+import com.example.smartbadmintonracket.chart.ChartManager;
+import com.github.mikephil.charting.charts.LineChart;
 
 public class MainActivity extends AppCompatActivity {
     
     private BLEManager bleManager;
     private CalibrationManager calibrationManager;
+    private ChartManager chartManager;
     private TextView statusText;
     private TextView dataCountText;
     private TextView timestampText;
@@ -69,6 +72,9 @@ public class MainActivity extends AppCompatActivity {
         // 初始化校正管理器
         calibrationManager = new CalibrationManager(this);
         
+        // 初始化圖表管理器
+        initChartManager();
+        
         // 設定權限請求
         setupPermissionLauncher();
         
@@ -99,6 +105,20 @@ public class MainActivity extends AppCompatActivity {
         disconnectButton = findViewById(R.id.disconnectButton);
         calibrateButton = findViewById(R.id.calibrateButton);
         calibrationStatusText = findViewById(R.id.calibrationStatusText);
+    }
+    
+    private void initChartManager() {
+        LineChart accelXChart = findViewById(R.id.accelXChart);
+        LineChart accelYChart = findViewById(R.id.accelYChart);
+        LineChart accelZChart = findViewById(R.id.accelZChart);
+        LineChart gyroXChart = findViewById(R.id.gyroXChart);
+        LineChart gyroYChart = findViewById(R.id.gyroYChart);
+        LineChart gyroZChart = findViewById(R.id.gyroZChart);
+        
+        chartManager = new ChartManager(
+            accelXChart, accelYChart, accelZChart,
+            gyroXChart, gyroYChart, gyroZChart
+        );
     }
     
     private void setupPermissionLauncher() {
@@ -171,6 +191,10 @@ public class MainActivity extends AppCompatActivity {
                         statusText.setTextColor(0xFF4CAF50); // 綠色
                         scanButton.setEnabled(false);
                         disconnectButton.setEnabled(true);
+                        // 連接成功後啟動圖表更新
+                        if (chartManager != null) {
+                            chartManager.startUpdating();
+                        }
                         Toast.makeText(MainActivity.this, "連接成功！", Toast.LENGTH_SHORT).show();
                     });
                 }
@@ -209,6 +233,11 @@ public class MainActivity extends AppCompatActivity {
             dataCount = 0;
             updateDataCount();
             clearDataDisplay();
+            
+            // 停止圖表更新
+            if (chartManager != null) {
+                chartManager.stopUpdating();
+            }
         });
     }
     
@@ -314,6 +343,13 @@ public class MainActivity extends AppCompatActivity {
                     ? calibrationManager.applyCalibration(data) 
                     : data;
                 
+                // 將資料傳給圖表管理器（用於降採樣和更新）
+                if (chartManager != null) {
+                    chartManager.addDataPoint(calibratedData);
+                } else {
+                    Log.w("MainActivity", "chartManager 為 null，無法更新圖表");
+                }
+                
                 dataCount++;
                 updateDataDisplay(calibratedData);
                 updateDataCount();
@@ -366,6 +402,10 @@ public class MainActivity extends AppCompatActivity {
         if (bleManager != null) {
             bleManager.disconnect();
         }
+        // 釋放圖表資源
+        if (chartManager != null) {
+            chartManager.release();
+        }
     }
     
     @Override
@@ -374,6 +414,19 @@ public class MainActivity extends AppCompatActivity {
         // 可選：在背景時停止掃描以節省電量
         if (bleManager != null && !isConnected) {
             bleManager.stopScan();
+        }
+        // 暫停時停止圖表更新（節省資源）
+        if (chartManager != null) {
+            chartManager.stopUpdating();
+        }
+    }
+    
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // 恢復時重新啟動圖表更新（如果已連接）
+        if (chartManager != null && isConnected) {
+            chartManager.startUpdating();
         }
     }
 }

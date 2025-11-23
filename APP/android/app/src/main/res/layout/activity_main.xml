@@ -171,6 +171,101 @@
                 android:padding="8dp"
                 android:layout_marginTop="8dp" />
 
+            <!-- 圖表區域標題 -->
+            <TextView
+                android:id="@+id/chartTitleText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="即時曲線圖（最近 5 秒）"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="16dp" />
+
+            <!-- 加速度 X 軸圖表 -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="加速度 X 軸 (g)"
+                android:textSize="12sp"
+                android:textColor="#2196F3"
+                android:layout_marginBottom="4dp" />
+            <com.github.mikephil.charting.charts.LineChart
+                android:id="@+id/accelXChart"
+                android:layout_width="match_parent"
+                android:layout_height="150dp"
+                android:layout_marginBottom="16dp" />
+
+            <!-- 加速度 Y 軸圖表 -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="加速度 Y 軸 (g)"
+                android:textSize="12sp"
+                android:textColor="#4CAF50"
+                android:layout_marginBottom="4dp" />
+            <com.github.mikephil.charting.charts.LineChart
+                android:id="@+id/accelYChart"
+                android:layout_width="match_parent"
+                android:layout_height="150dp"
+                android:layout_marginBottom="16dp" />
+
+            <!-- 加速度 Z 軸圖表 -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="加速度 Z 軸 (g)"
+                android:textSize="12sp"
+                android:textColor="#9C27B0"
+                android:layout_marginBottom="4dp" />
+            <com.github.mikephil.charting.charts.LineChart
+                android:id="@+id/accelZChart"
+                android:layout_width="match_parent"
+                android:layout_height="150dp"
+                android:layout_marginBottom="16dp" />
+
+            <!-- 角速度 X 軸圖表 -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="角速度 X 軸 (dps)"
+                android:textSize="12sp"
+                android:textColor="#FF9800"
+                android:layout_marginBottom="4dp" />
+            <com.github.mikephil.charting.charts.LineChart
+                android:id="@+id/gyroXChart"
+                android:layout_width="match_parent"
+                android:layout_height="150dp"
+                android:layout_marginBottom="16dp" />
+
+            <!-- 角速度 Y 軸圖表 -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="角速度 Y 軸 (dps)"
+                android:textSize="12sp"
+                android:textColor="#F44336"
+                android:layout_marginBottom="4dp" />
+            <com.github.mikephil.charting.charts.LineChart
+                android:id="@+id/gyroYChart"
+                android:layout_width="match_parent"
+                android:layout_height="150dp"
+                android:layout_marginBottom="16dp" />
+
+            <!-- 角速度 Z 軸圖表 -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="角速度 Z 軸 (dps)"
+                android:textSize="12sp"
+                android:textColor="#00BCD4"
+                android:layout_marginBottom="4dp" />
+            <com.github.mikephil.charting.charts.LineChart
+                android:id="@+id/gyroZChart"
+                android:layout_width="match_parent"
+                android:layout_height="150dp"
+                android:layout_marginBottom="16dp" />
+
         </LinearLayout>
     </ScrollView>
 

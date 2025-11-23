@@ -47,6 +47,9 @@ dependencies {
     // Gson (用於 JSON 序列化/反序列化，校正資料儲存)
     implementation("com.google.code.gson:gson:2.10.1")
     
+    // MPAndroidChart (用於圖表顯示)
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+    
     // Firebase（之後會加入）
     // implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
     // implementation("com.google.firebase:firebase-firestore")
