@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.example.smartbadmintonracket" />
+                  <option name="mobileSdkAppId" value="1:888885056332:android:3f5e3a94a7921891d875e9" />
+                  <option name="projectId" value="smart-badminton-racket" />
+                  <option name="projectNumber" value="888885056332" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

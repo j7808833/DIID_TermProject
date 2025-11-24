@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
-    // Firebase 插件（之後會加入）
-    // id("com.google.gms.google-services")
+    // Firebase 插件
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -50,9 +50,9 @@ dependencies {
     // MPAndroidChart (用於圖表顯示)
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
     
-    // Firebase（之後會加入）
-    // implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
-    // implementation("com.google.firebase:firebase-firestore")
+    // Firebase
+    implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
+    implementation("com.google.firebase:firebase-firestore")
     
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

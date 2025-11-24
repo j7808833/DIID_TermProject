@@ -27,6 +27,7 @@ import android.util.Log;
 import com.example.smartbadmintonracket.calibration.CalibrationManager;
 import com.example.smartbadmintonracket.chart.ChartManager;
 import com.example.smartbadmintonracket.filter.VoltageFilter;
+import com.example.smartbadmintonracket.firebase.FirebaseManager;
 import com.github.mikephil.charting.charts.LineChart;
 
 public class MainActivity extends AppCompatActivity {
@@ -35,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
     private CalibrationManager calibrationManager;
     private ChartManager chartManager;
     private VoltageFilter voltageFilter;
+    private FirebaseManager firebaseManager;
     private TextView statusText;
     private TextView dataCountText;
     private TextView timestampText;
@@ -45,7 +47,9 @@ public class MainActivity extends AppCompatActivity {
     private Button scanButton;
     private Button disconnectButton;
     private Button calibrateButton;
+    private Button recordButton;
     private TextView calibrationStatusText;
+    private TextView recordingStatusText;
     
     private int dataCount = 0;
     private boolean isConnected = false;
@@ -77,6 +81,10 @@ public class MainActivity extends AppCompatActivity {
         // 初始化電壓濾波器
         voltageFilter = new VoltageFilter();
         
+        // 初始化 Firebase 管理器
+        firebaseManager = new FirebaseManager();
+        firebaseManager.initialize();
+        
         // 初始化圖表管理器
         initChartManager();
         
@@ -91,6 +99,9 @@ public class MainActivity extends AppCompatActivity {
         
         // 設定校正按鈕
         setupCalibrationButton();
+        
+        // 設定錄製按鈕
+        setupRecordButton();
         
         // 設定 BLE 回調（必須在初始化後立即設定）
         setupBLECallbacks();
@@ -109,7 +120,9 @@ public class MainActivity extends AppCompatActivity {
         scanButton = findViewById(R.id.scanButton);
         disconnectButton = findViewById(R.id.disconnectButton);
         calibrateButton = findViewById(R.id.calibrateButton);
+        recordButton = findViewById(R.id.recordButton);
         calibrationStatusText = findViewById(R.id.calibrationStatusText);
+        recordingStatusText = findViewById(R.id.recordingStatusText);
     }
     
     private void initChartManager() {
@@ -275,6 +288,50 @@ public class MainActivity extends AppCompatActivity {
         });
     }
     
+    private void setupRecordButton() {
+        recordButton.setOnClickListener(v -> {
+            if (!isConnected) {
+                Toast.makeText(this, "請先連接設備", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            
+            if (firebaseManager == null) {
+                Toast.makeText(this, "Firebase 尚未初始化", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            
+            boolean isRecording = firebaseManager.isRecordingMode();
+            firebaseManager.setRecordingMode(!isRecording);
+            
+            if (!isRecording) {
+                // 開始錄製
+                recordButton.setText("停止錄製");
+                recordButton.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xFFF44336)); // 紅色
+                recordingStatusText.setText("錄製中... Session: " + firebaseManager.getCurrentSessionId());
+                recordingStatusText.setVisibility(android.view.View.VISIBLE);
+                recordingStatusText.setTextColor(0xFFF44336); // 紅色
+                Toast.makeText(this, "開始錄製資料", Toast.LENGTH_SHORT).show();
+            } else {
+                // 停止錄製
+                recordButton.setText("開始錄製");
+                recordButton.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xFF4CAF50)); // 綠色
+                recordingStatusText.setText("錄製已停止");
+                recordingStatusText.setTextColor(0xFF757575); // 灰色
+                Toast.makeText(this, "停止錄製，資料已上傳", Toast.LENGTH_SHORT).show();
+                
+                // 3 秒後隱藏狀態文字
+                new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+                    recordingStatusText.setVisibility(android.view.View.GONE);
+                }, 3000);
+            }
+        });
+        
+        // 初始狀態：未錄製
+        recordButton.setText("開始錄製");
+        recordButton.setBackgroundColor(0xFF4CAF50); // 綠色
+        recordingStatusText.setVisibility(android.view.View.GONE);
+    }
+    
     private void showCalibrationDialog() {
         new android.app.AlertDialog.Builder(this)
             .setTitle("零點校正")
@@ -364,6 +421,11 @@ public class MainActivity extends AppCompatActivity {
                     Log.w("MainActivity", "chartManager 為 null，無法更新圖表");
                 }
                 
+                // 將資料傳給 Firebase 管理器（僅在錄製模式下）
+                if (firebaseManager != null) {
+                    firebaseManager.addData(calibratedData);
+                }
+                
                 dataCount++;
                 updateDataDisplay(calibratedData);
                 updateDataCount();
@@ -424,6 +486,10 @@ public class MainActivity extends AppCompatActivity {
         // 釋放圖表資源
         if (chartManager != null) {
             chartManager.release();
+        }
+        // 清理 Firebase 資源
+        if (firebaseManager != null) {
+            firebaseManager.cleanup();
         }
     }
     
