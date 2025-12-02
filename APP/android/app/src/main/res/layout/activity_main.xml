@@ -278,13 +278,14 @@
             <TextView
                 android:id="@+id/latestDataText"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="150dp"
                 android:text="最新資料:\n--"
                 android:textSize="12sp"
                 android:fontFamily="monospace"
                 android:background="#F5F5F5"
                 android:padding="8dp"
-                android:layout_marginTop="8dp" />
+                android:layout_marginTop="8dp"
+                android:gravity="top|start" />
 
             <!-- 圖表區域標題 -->
             <TextView

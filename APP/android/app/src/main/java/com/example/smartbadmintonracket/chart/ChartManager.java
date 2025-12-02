@@ -89,10 +89,10 @@ public class ChartManager {
      * 初始化所有圖表
      */
     private void initializeCharts() {
-        // 初始化加速度圖表
-        initializeChart(accelXChart, "加速度 X (g)", 0xFF2196F3, -20f, 20f);
-        initializeChart(accelYChart, "加速度 Y (g)", 0xFF4CAF50, -20f, 20f);
-        initializeChart(accelZChart, "加速度 Z (g)", 0xFF9C27B0, -20f, 20f);
+        // 初始化加速度圖表（Y軸範圍：±5g）
+        initializeChart(accelXChart, "加速度 X (g)", 0xFF2196F3, -5f, 5f);
+        initializeChart(accelYChart, "加速度 Y (g)", 0xFF4CAF50, -5f, 5f);
+        initializeChart(accelZChart, "加速度 Z (g)", 0xFF9C27B0, -5f, 5f);
         
         // 初始化角速度圖表
         initializeChart(gyroXChart, "角速度 X (dps)", 0xFFFF9800, -2500f, 2500f);
