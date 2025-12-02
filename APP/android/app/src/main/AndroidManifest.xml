@@ -15,6 +15,10 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     
+    <!-- 網路權限（Firebase 需要） -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    
     <!-- BLE 功能聲明 -->
     <uses-feature android:name="android.hardware.bluetooth_le" android:required="true" />
 

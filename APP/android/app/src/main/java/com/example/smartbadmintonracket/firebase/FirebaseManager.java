@@ -74,7 +74,7 @@ public class FirebaseManager {
             // 開始定時檢查上傳條件
             startUploadCheck();
         } catch (Exception e) {
-            Log.e(TAG, "Firebase 初始化失敗", e);
+            Log.e(TAG, "Firebase 初始化失敗: " + e.getClass().getSimpleName() + " - " + e.getMessage(), e);
             isInitialized = false;
         }
     }
@@ -179,7 +179,7 @@ public class FirebaseManager {
                 })
                 .addOnFailureListener(e -> {
                     totalFailed++;
-                    Log.e(TAG, "資料上傳失敗", e);
+                    Log.e(TAG, "資料上傳失敗: " + e.getClass().getSimpleName() + " - " + e.getMessage(), e);
                     // TODO: 儲存至本地資料庫以便重試
                 });
         }
