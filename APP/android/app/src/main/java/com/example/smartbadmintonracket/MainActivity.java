@@ -29,6 +29,7 @@ import android.util.Log;
 
 import com.example.smartbadmintonracket.calibration.CalibrationManager;
 import com.example.smartbadmintonracket.chart.ChartManager;
+import com.example.smartbadmintonracket.csv.CSVManager;
 import com.example.smartbadmintonracket.filter.VoltageFilter;
 import com.example.smartbadmintonracket.firebase.FirebaseManager;
 import com.github.mikephil.charting.charts.LineChart;
@@ -40,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
     private ChartManager chartManager;
     private VoltageFilter voltageFilter;
     private FirebaseManager firebaseManager;
+    private CSVManager csvManager;
     private TextView statusText;
     private TextView dataCountText;
     private View statusIndicator;
@@ -89,6 +91,10 @@ public class MainActivity extends AppCompatActivity {
         // 初始化 Firebase 管理器
         firebaseManager = new FirebaseManager();
         firebaseManager.initialize();
+        
+        // 初始化 CSV 管理器
+        csvManager = new CSVManager(this);
+        csvManager.initialize();
         
         // 初始化圖表管理器
         initChartManager();
@@ -316,32 +322,38 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
             
-            if (firebaseManager == null) {
-                Toast.makeText(this, "Firebase 尚未初始化", Toast.LENGTH_SHORT).show();
+            if (firebaseManager == null || csvManager == null) {
+                Toast.makeText(this, "資料管理器尚未初始化", Toast.LENGTH_SHORT).show();
                 return;
             }
             
             boolean isRecording = firebaseManager.isRecordingMode();
+            
+            // 同時啟動/停止 Firebase 和 CSV
             firebaseManager.setRecordingMode(!isRecording);
+            csvManager.setRecordingMode(!isRecording);
             
             if (!isRecording) {
                 // 開始錄製
                 recordButton.setText("停止錄製");
                 recordButton.setIcon(ContextCompat.getDrawable(this, R.drawable.ic_record_stop));
                 recordButton.setBackgroundTintList(android.content.res.ColorStateList.valueOf(getResources().getColor(R.color.recording_active, getTheme())));
-                recordingStatusText.setText("錄製中... Session: " + firebaseManager.getCurrentSessionId());
+                String statusMsg = "錄製中... Session: " + firebaseManager.getCurrentSessionId() + 
+                                   "\nCSV: " + csvManager.getCurrentFilePath();
+                recordingStatusText.setText(statusMsg);
                 recordingStatusText.setVisibility(android.view.View.VISIBLE);
                 recordingStatusText.setTextColor(getResources().getColor(R.color.recording_active, getTheme()));
                 statusMessageCard.setVisibility(android.view.View.VISIBLE);
-                Toast.makeText(this, "開始錄製資料", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "開始錄製資料（Firebase + CSV）", Toast.LENGTH_SHORT).show();
             } else {
                 // 停止錄製
                 recordButton.setText("開始錄製");
                 recordButton.setIcon(ContextCompat.getDrawable(this, R.drawable.ic_record_start));
                 recordButton.setBackgroundTintList(android.content.res.ColorStateList.valueOf(getResources().getColor(R.color.recording_inactive, getTheme())));
-                recordingStatusText.setText("錄製已停止");
+                String stats = "錄製已停止\n" + firebaseManager.getUploadStats() + "\n" + csvManager.getWriteStats();
+                recordingStatusText.setText(stats);
                 recordingStatusText.setTextColor(getResources().getColor(android.R.color.darker_gray, getTheme()));
-                Toast.makeText(this, "停止錄製，資料已上傳", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "停止錄製，資料已上傳並儲存", Toast.LENGTH_SHORT).show();
                 
                 // 3 秒後隱藏狀態文字
                 new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
@@ -459,6 +471,11 @@ public class MainActivity extends AppCompatActivity {
                     firebaseManager.addData(calibratedData);
                 }
                 
+                // 將資料傳給 CSV 管理器（僅在錄製模式下）
+                if (csvManager != null) {
+                    csvManager.addData(calibratedData);
+                }
+                
                 dataCount++;
                 updateDataDisplay(calibratedData);
                 updateDataCount();
@@ -523,6 +540,10 @@ public class MainActivity extends AppCompatActivity {
         // 清理 Firebase 資源
         if (firebaseManager != null) {
             firebaseManager.cleanup();
+        }
+        // 清理 CSV 資源
+        if (csvManager != null) {
+            csvManager.cleanup();
         }
     }
     
