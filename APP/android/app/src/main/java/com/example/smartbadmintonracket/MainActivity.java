@@ -258,11 +258,55 @@ public class MainActivity extends AppCompatActivity {
                         statusIndicator.setBackgroundResource(R.drawable.status_indicator_disconnected);
                         scanButton.setEnabled(true);
                         disconnectButton.setEnabled(false);
+                        
+                        // 如果正在錄製，自動停止錄製
+                        boolean wasRecording = false;
+                        if (firebaseManager != null && firebaseManager.isRecordingMode()) {
+                            wasRecording = true;
+                            firebaseManager.setRecordingMode(false);
+                        }
+                        if (csvManager != null && csvManager.isRecordingMode()) {
+                            wasRecording = true;
+                            csvManager.setRecordingMode(false);
+                        }
+                        
+                        if (wasRecording) {
+                            // 更新錄製按鈕狀態
+                            recordButton.setText("開始錄製");
+                            recordButton.setIcon(ContextCompat.getDrawable(MainActivity.this, R.drawable.ic_record_start));
+                            recordButton.setBackgroundTintList(android.content.res.ColorStateList.valueOf(getResources().getColor(R.color.recording_inactive, getTheme())));
+                            String stats = "錄製已停止（設備斷線）\n" + 
+                                (firebaseManager != null ? firebaseManager.getUploadStats() : "") + "\n" + 
+                                (csvManager != null ? csvManager.getWriteStats() : "");
+                            recordingStatusText.setText(stats);
+                            recordingStatusText.setTextColor(getResources().getColor(android.R.color.darker_gray, getTheme()));
+                            recordingStatusText.setVisibility(android.view.View.VISIBLE);
+                            statusMessageCard.setVisibility(android.view.View.VISIBLE);
+                            
+                            // 3 秒後隱藏狀態文字
+                            new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+                                recordingStatusText.setVisibility(android.view.View.GONE);
+                                if (calibrationStatusText.getVisibility() != android.view.View.VISIBLE) {
+                                    statusMessageCard.setVisibility(android.view.View.GONE);
+                                }
+                            }, 3000);
+                            
+                            Toast.makeText(MainActivity.this, "設備已斷線，錄製已自動停止", Toast.LENGTH_LONG).show();
+                        }
+                        
+                        // 停止圖表更新
+                        if (chartManager != null) {
+                            chartManager.stopUpdating();
+                        }
+                        
                         // 重置電壓濾波器
                         if (voltageFilter != null) {
                             voltageFilter.reset();
                         }
-                        Toast.makeText(MainActivity.this, "連接已斷開", Toast.LENGTH_SHORT).show();
+                        
+                        if (!wasRecording) {
+                            Toast.makeText(MainActivity.this, "連接已斷開", Toast.LENGTH_SHORT).show();
+                        }
                     });
                 }
                 
@@ -323,11 +367,6 @@ public class MainActivity extends AppCompatActivity {
     
     private void setupRecordButton() {
         recordButton.setOnClickListener(v -> {
-            if (!isConnected) {
-                Toast.makeText(this, "請先連接設備", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            
             if (firebaseManager == null || csvManager == null) {
                 Toast.makeText(this, "資料管理器尚未初始化", Toast.LENGTH_SHORT).show();
                 return;
@@ -335,6 +374,13 @@ public class MainActivity extends AppCompatActivity {
             
             boolean isRecording = firebaseManager.isRecordingMode();
             
+            // 如果要開始錄製，需要檢查連接狀態
+            if (!isRecording && !isConnected) {
+                Toast.makeText(this, "請先連接設備", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            
+            // 停止錄製時不需要檢查連接狀態（允許在斷線時停止錄製）
             // 同時啟動/停止 Firebase 和 CSV
             firebaseManager.setRecordingMode(!isRecording);
             csvManager.setRecordingMode(!isRecording);

@@ -37,7 +37,9 @@ The Android mobile App provides the following key features:
 3. **Real-time Data Display**: Display six-axis sensor values in real-time
 4. **Chart Visualization**: Display six-axis curves with 100ms sampling interval
 5. **Firebase Data Upload**: Batch upload calibrated data for AI training
-6. **Remote AI Recognition**: Receive recognition results from server (5 stroke types + smash speed)
+6. **CSV Local Data Storage**: Save data in CSV format for easy Excel access
+7. **Smart Disconnection Handling**: Automatically stop recording and clean up resources on BLE disconnection
+8. **Remote AI Recognition**: Receive recognition results from server (5 stroke types + smash speed)
 
 ### Stroke Recognition Types
 
@@ -1083,6 +1085,178 @@ Data is uploaded when **either** condition is met:
 ### Offline Data Cache (To Be Implemented)
 
 Currently, when Firebase upload fails, errors are logged in Logcat, but local database storage has not been implemented. Future implementations can consider using Room database for offline caching and retry mechanisms.
+
+---
+
+## CSV Local Data Storage
+
+### Feature Overview
+
+The Android App provides local CSV file storage functionality, saving IMU data in CSV format to external storage for easy analysis and processing. CSV files use Excel-friendly timestamp format and support automatic file splitting.
+
+### CSV File Format
+
+#### Timestamp Format
+
+- **Format**: `yyyy/MM/dd HH:mm:ss.SSS`
+- **Example**: `2025/12/05 23:34:51.123`
+- **Advantage**: Excel can directly recognize this format without manual conversion
+
+#### CSV Field Structure
+
+```csv
+timestamp,receivedAt,accelX,accelY,accelZ,gyroX,gyroY,gyroZ
+2025/12/05 23:34:51.123,2025/12/05 23:34:51.145,-1.016414,-0.006844,-0.023593,-0.087150,0.118300,0.036750
+```
+
+- **timestamp**: Sensor timestamp (converted to absolute time)
+- **receivedAt**: Android reception timestamp
+- **accelX/Y/Z**: Acceleration three axes (unit: g)
+- **gyroX/Y/Z**: Angular velocity three axes (unit: dps)
+
+### File Naming Convention
+
+#### First File
+
+- Named using the reception time of the first data point
+- Format: `imu_data_YYYYMMDD_HHmmss.csv`
+- Example: Recording starts at `23:34:51.123` → `imu_data_20251205_233451.csv`
+
+#### Subsequent Files
+
+- Named using 5-minute interval boundary times
+- Format: `imu_data_YYYYMMDD_HHmmss.csv` (time aligned to 5-minute multiples)
+- Examples:
+  - First file: `imu_data_20251205_233451.csv` (starts at 23:34:51)
+  - Second file: `imu_data_20251205_233500.csv` (starts at 23:35:00)
+  - Third file: `imu_data_20251205_234000.csv` (starts at 23:40:00)
+
+### Automatic File Splitting
+
+#### Split Interval
+
+- **Time Interval**: 5 minutes (300,000 milliseconds)
+- **Trigger Condition**: Automatically switches files when data's `receivedAt` time crosses a 5-minute boundary
+
+#### Split Logic
+
+```java
+// First file: Named using first data point time
+if (isFirstFile) {
+    openNewFile(firstDataTime);  // e.g., 23:34:51
+    currentFileStartTime = alignTo5Minutes(firstDataTime);  // 23:35:00
+}
+
+// Subsequent files: Check if crossing 5-minute boundary
+long nextFileStartTime = alignTo5Minutes(data.receivedAt);
+if (nextFileStartTime != currentFileStartTime) {
+    // Switch to new file
+    flushAndCloseFile();
+    openNewFile(getCurrent5MinuteBlock(data.receivedAt));
+    currentFileStartTime = nextFileStartTime;
+}
+```
+
+#### Example Scenario
+
+Recording from 23:34:51 to 23:40:00 will produce 3 files:
+
+1. `imu_data_20251205_233451.csv` (23:34:51 - 23:35:00)
+2. `imu_data_20251205_233500.csv` (23:35:00 - 23:40:00)
+3. `imu_data_20251205_234000.csv` (starts at 23:40:00)
+
+### Batch Write Mechanism
+
+- **Write Frequency**: Batch write every 2 seconds
+- **Advantage**: Reduces I/O operations, improves efficiency
+- **Data Buffering**: Uses `pendingData` list to temporarily store data to be written
+
+### Storage Location
+
+- **Directory**: External storage app-specific directory `/Android/data/com.example.smartbadmintonracket/files/IMU_Data/`
+- **Permission**: No special permissions required (uses app-specific directory)
+
+### Implementation Location
+
+- **CSVManager.java**: `APP/android/app/src/main/java/com/example/smartbadmintonracket/csv/CSVManager.java`
+
+---
+
+## BLE Disconnection Handling
+
+### Disconnection Detection
+
+The system uses Android BLE protocol's `onConnectionStateChange` callback to detect connection state changes:
+
+```java
+@Override
+public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+    if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+        // Disconnection detected
+        handleDisconnection(gatt);
+    }
+}
+```
+
+### Disconnection Handling Flow
+
+#### 1. Resource Cleanup
+
+- Close GATT connection (`gatt.disconnect()` and `gatt.close()`)
+- Reset data buffers
+- Reset time synchronization state
+- Clear timeout callbacks
+- Set `bluetoothGatt` to `null` (avoid using closed connection)
+
+#### 2. Automatic Recording Stop
+
+When disconnection is detected, if recording is active, the system will automatically:
+
+- **Stop Firebase Recording**: `firebaseManager.setRecordingMode(false)`
+- **Stop CSV Recording**: `csvManager.setRecordingMode(false)`
+- **Close CSV File**: Ensure all data is written
+
+#### 3. UI Updates
+
+- Update connection status display ("Disconnected")
+- Update recording button state ("Start Recording")
+- Show notification: "Device disconnected, recording automatically stopped"
+- Stop chart updates
+- Reset voltage filter
+
+### Disconnection Cause Handling
+
+#### Common Disconnection Causes
+
+1. **Physical Disconnection**: Cable breakage, device moved out of range
+2. **Battery Depletion**: Device automatically shuts down
+3. **Manual Disconnect**: User actively disconnects
+4. **BLE Protocol Layer Disconnection**: Connection supervision timeout
+
+#### Connection Supervision Timeout
+
+- BLE protocol uses "Connection Supervision Timeout" mechanism to detect if connection is still valid
+- Default timeout is usually several seconds to tens of seconds (determined by BLE stack)
+- Will not determine disconnection due to a few milliseconds of data reception delay
+
+### Recovery After Disconnection
+
+#### Manual Reconnection
+
+- User can click "Scan Device" button to rescan and reconnect
+- System will automatically clean up old connection state
+
+#### Automatic Reconnection (To Be Implemented)
+
+- Automatic reconnection is not currently implemented
+- Future implementations can consider automatically rescanning and reconnecting after disconnection
+
+### Implementation Locations
+
+- **BLEManager.java**: `APP/android/app/src/main/java/com/example/smartbadmintonracket/BLEManager.java`
+  - `onConnectionStateChange()` method
+- **MainActivity.java**: `APP/android/app/src/main/java/com/example/smartbadmintonracket/MainActivity.java`
+  - `onDisconnected()` callback handling
 
 ---
 

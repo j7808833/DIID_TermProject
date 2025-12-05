@@ -290,19 +290,47 @@ public class BLEManager {
                     // 如果成功，等待 onMtuChanged 回調後再開始服務發現
                 }
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                Log.d(TAG, "BLE 連接中斷");
+                Log.d(TAG, "BLE 連接中斷，status=" + status);
+                
+                // 清理 GATT 連接
+                if (gatt != null) {
+                    try {
+                        if (hasConnectPermission()) {
+                            gatt.disconnect();
+                        }
+                        gatt.close();
+                    } catch (Exception e) {
+                        Log.e(TAG, "清理 GATT 連接時發生異常: " + e.getMessage(), e);
+                    }
+                }
+                
                 // 重置緩衝區
                 bufferOffset = 0;
+                
                 // 重置時間同步狀態（下次連線時需要重新同步）
                 timeSynced = false;
                 timeBaseMs = 0;
+                
                 // 清理超時回調
                 if (descriptorWriteTimeoutRunnable != null) {
                     timeoutHandler.removeCallbacks(descriptorWriteTimeoutRunnable);
                     descriptorWriteTimeoutRunnable = null;
                 }
+                
+                // 重置 bluetoothGatt 引用（避免使用已關閉的連接）
+                if (bluetoothGatt == gatt) {
+                    bluetoothGatt = null;
+                }
+                
+                // 通知回調（在主線程執行，確保 UI 更新）
                 if (connectionCallback != null) {
-                    connectionCallback.onDisconnected();
+                    handler.post(() -> {
+                        try {
+                            connectionCallback.onDisconnected();
+                        } catch (Exception e) {
+                            Log.e(TAG, "onDisconnected 回調執行時發生異常: " + e.getMessage(), e);
+                        }
+                    });
                 }
             }
         }
@@ -679,12 +707,33 @@ public class BLEManager {
         stopScan();
         
         if (bluetoothGatt != null) {
-            if (hasConnectPermission()) {
-                bluetoothGatt.disconnect();
+            try {
+                if (hasConnectPermission()) {
+                    bluetoothGatt.disconnect();
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "斷開連接時發生異常: " + e.getMessage(), e);
             }
-            bluetoothGatt.close();
+            
+            try {
+                bluetoothGatt.close();
+            } catch (Exception e) {
+                Log.e(TAG, "關閉 GATT 連接時發生異常: " + e.getMessage(), e);
+            }
+            
             bluetoothGatt = null;
         }
+        
+        // 清理超時回調
+        if (descriptorWriteTimeoutRunnable != null) {
+            timeoutHandler.removeCallbacks(descriptorWriteTimeoutRunnable);
+            descriptorWriteTimeoutRunnable = null;
+        }
+        
+        // 重置狀態
+        bufferOffset = 0;
+        timeSynced = false;
+        timeBaseMs = 0;
         
         Log.d(TAG, "已斷開連接");
     }
@@ -775,7 +824,24 @@ public class BLEManager {
      * 檢查是否已連接
      */
     public boolean isConnected() {
-        return bluetoothGatt != null;
+        if (bluetoothGatt == null) {
+            return false;
+        }
+        
+        // 嘗試檢查連接狀態（需要權限）
+        if (hasConnectPermission()) {
+            try {
+                int state = bluetoothGatt.getConnectionState(bluetoothGatt.getDevice());
+                return state == BluetoothProfile.STATE_CONNECTED;
+            } catch (Exception e) {
+                Log.w(TAG, "檢查連接狀態時發生異常: " + e.getMessage());
+                // 發生異常時，假設已斷開
+                return false;
+            }
+        }
+        
+        // 沒有權限時，僅檢查 bluetoothGatt 是否為 null
+        return true;
     }
 }
 

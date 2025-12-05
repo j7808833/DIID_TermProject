@@ -37,7 +37,9 @@ Android 手機 App 提供以下核心功能：
 3. **即時資料顯示**：即時顯示六軸感測器數值
 4. **曲線圖視覺化**：以 100ms 為單位顯示六軸曲線圖
 5. **Firebase 資料上傳**：批次上傳校正後的資料用於 AI 訓練
-6. **遠端 AI 辨識**：接收伺服器辨識結果（5種姿態 + 殺球球速）
+6. **CSV 本地資料儲存**：將資料儲存為 CSV 格式，支援 Excel 直接開啟
+7. **智能斷線處理**：BLE 斷線時自動停止錄製並清理資源
+8. **遠端 AI 辨識**：接收伺服器辨識結果（5種姿態 + 殺球球速）
 
 ### 球路識別類型
 
@@ -1086,6 +1088,178 @@ public class FirebaseManager {
 ### 離線資料緩存（待實作）
 
 目前 Firebase 上傳失敗時會在 Logcat 中記錄錯誤，但尚未實現本地資料庫儲存。未來可考慮使用 Room 資料庫實現離線緩存和重試機制。
+
+---
+
+## CSV 本地資料儲存
+
+### 功能概述
+
+Android App 提供本地 CSV 檔案儲存功能，將 IMU 資料以 CSV 格式儲存到外部儲存，方便後續分析和處理。CSV 檔案使用 Excel 友好的時間戳記格式，並支援自動檔案分檔。
+
+### CSV 檔案格式
+
+#### 時間戳記格式
+
+- **格式**：`yyyy/MM/dd HH:mm:ss.SSS`
+- **範例**：`2025/12/05 23:34:51.123`
+- **優點**：Excel 可以直接識別此格式，無需手動轉換
+
+#### CSV 欄位結構
+
+```csv
+timestamp,receivedAt,accelX,accelY,accelZ,gyroX,gyroY,gyroZ
+2025/12/05 23:34:51.123,2025/12/05 23:34:51.145,-1.016414,-0.006844,-0.023593,-0.087150,0.118300,0.036750
+```
+
+- **timestamp**：感測器時間戳記（已轉換為絕對時間）
+- **receivedAt**：Android 接收時間戳記
+- **accelX/Y/Z**：加速度三軸（單位：g）
+- **gyroX/Y/Z**：角速度三軸（單位：dps）
+
+### 檔案命名規則
+
+#### 第一個檔案
+
+- 使用第一筆資料的接收時間命名
+- 格式：`imu_data_YYYYMMDD_HHmmss.csv`
+- 範例：從 `23:34:51.123` 開始錄製 → `imu_data_20251205_233451.csv`
+
+#### 後續檔案
+
+- 使用 5 分鐘倍數邊界時間命名
+- 格式：`imu_data_YYYYMMDD_HHmmss.csv`（時間對齊到 5 分鐘倍數）
+- 範例：
+  - 第一個檔案：`imu_data_20251205_233451.csv`（23:34:51 開始）
+  - 第二個檔案：`imu_data_20251205_233500.csv`（23:35:00 開始）
+  - 第三個檔案：`imu_data_20251205_234000.csv`（23:40:00 開始）
+
+### 自動檔案分檔
+
+#### 分檔間隔
+
+- **時間間隔**：5 分鐘（300,000 毫秒）
+- **觸發條件**：當資料的 `receivedAt` 時間跨越 5 分鐘倍數邊界時自動切換檔案
+
+#### 分檔邏輯
+
+```java
+// 第一個檔案：使用第一筆資料時間命名
+if (isFirstFile) {
+    openNewFile(firstDataTime);  // 例如：23:34:51
+    currentFileStartTime = alignTo5Minutes(firstDataTime);  // 23:35:00
+}
+
+// 後續檔案：檢查是否跨越 5 分鐘邊界
+long nextFileStartTime = alignTo5Minutes(data.receivedAt);
+if (nextFileStartTime != currentFileStartTime) {
+    // 切換到新檔案
+    flushAndCloseFile();
+    openNewFile(getCurrent5MinuteBlock(data.receivedAt));
+    currentFileStartTime = nextFileStartTime;
+}
+```
+
+#### 範例場景
+
+從 23:34:51 開始錄製到 23:40:00，會產生 3 個檔案：
+
+1. `imu_data_20251205_233451.csv`（23:34:51 - 23:35:00）
+2. `imu_data_20251205_233500.csv`（23:35:00 - 23:40:00）
+3. `imu_data_20251205_234000.csv`（23:40:00 開始）
+
+### 批次寫入機制
+
+- **寫入頻率**：每 2 秒批次寫入一次
+- **優點**：減少 I/O 操作，提高效率
+- **資料緩衝**：使用 `pendingData` 列表暫存待寫入資料
+
+### 儲存位置
+
+- **目錄**：外部儲存應用專屬目錄 `/Android/data/com.example.smartbadmintonracket/files/IMU_Data/`
+- **權限**：不需要特殊權限（使用應用專屬目錄）
+
+### 實際實現位置
+
+- **CSVManager.java**：`APP/android/app/src/main/java/com/example/smartbadmintonracket/csv/CSVManager.java`
+
+---
+
+## BLE 斷線處理機制
+
+### 斷線檢測
+
+系統使用 Android BLE 協議的 `onConnectionStateChange` 回調來檢測連接狀態變化：
+
+```java
+@Override
+public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+    if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+        // 檢測到斷線
+        handleDisconnection(gatt);
+    }
+}
+```
+
+### 斷線處理流程
+
+#### 1. 資源清理
+
+- 關閉 GATT 連接（`gatt.disconnect()` 和 `gatt.close()`）
+- 重置資料緩衝區
+- 重置時間同步狀態
+- 清理超時回調
+- 將 `bluetoothGatt` 設為 `null`（避免使用已關閉的連接）
+
+#### 2. 自動停止錄製
+
+當檢測到斷線時，如果正在錄製，系統會自動：
+
+- **停止 Firebase 錄製**：`firebaseManager.setRecordingMode(false)`
+- **停止 CSV 錄製**：`csvManager.setRecordingMode(false)`
+- **關閉 CSV 檔案**：確保所有資料都已寫入
+
+#### 3. UI 更新
+
+- 更新連接狀態顯示（「已斷線」）
+- 更新錄製按鈕狀態（「開始錄製」）
+- 顯示提示訊息：「設備已斷線，錄製已自動停止」
+- 停止圖表更新
+- 重置電壓濾波器
+
+### 斷線原因處理
+
+#### 常見斷線原因
+
+1. **物理斷線**：電線斷裂、設備移動超出範圍
+2. **電池耗盡**：設備自動關機
+3. **手動斷開**：使用者主動斷開連接
+4. **BLE 協議層斷線**：連接監督超時（Connection Supervision Timeout）
+
+#### 連接監督超時
+
+- BLE 協議使用「連接監督超時」機制來檢測連接是否仍然有效
+- 預設超時時間通常為數秒到數十秒（由 BLE 堆疊決定）
+- 不會因為幾毫秒的資料接收延遲就判定斷線
+
+### 斷線後的恢復
+
+#### 手動重連
+
+- 使用者可以點擊「掃描設備」按鈕重新掃描並連接
+- 系統會自動清理舊的連接狀態
+
+#### 自動重連（待實作）
+
+- 目前尚未實現自動重連功能
+- 未來可考慮在斷線後自動重新掃描並連接
+
+### 實際實現位置
+
+- **BLEManager.java**：`APP/android/app/src/main/java/com/example/smartbadmintonracket/BLEManager.java`
+  - `onConnectionStateChange()` 方法
+- **MainActivity.java**：`APP/android/app/src/main/java/com/example/smartbadmintonracket/MainActivity.java`
+  - `onDisconnected()` 回調處理
 
 ---
 

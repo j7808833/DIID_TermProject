@@ -26,7 +26,9 @@
 3. **即時資料顯示** - 顯示六軸感測器數值
 4. **曲線圖視覺化** - 以 100ms 為單位顯示六軸曲線圖
 5. **Firebase 資料上傳** - 批次上傳校正後的資料
-6. **遠端 AI 辨識** - 接收伺服器辨識結果（5種姿態 + 球速）
+6. **CSV 本地資料儲存** - 將資料儲存為 CSV 格式，支援 Excel 直接開啟
+7. **智能斷線處理** - BLE 斷線時自動停止錄製並清理資源
+8. **遠端 AI 辨識** - 接收伺服器辨識結果（5種姿態 + 球速）
 
 ---
 
@@ -175,7 +177,77 @@
 - ✅ 網路恢復時自動重新上傳
 - ✅ 顯示上傳狀態（成功/失敗/待上傳）
 
-### 6. 遠端 AI 辨識
+### 6. CSV 本地資料儲存
+
+#### 6.1 功能概述
+- ✅ 將 IMU 資料儲存為 CSV 格式到外部儲存
+- ✅ 時間戳記格式：`yyyy/MM/dd HH:mm:ss.SSS`（Excel 友好格式）
+- ✅ 自動檔案分檔：每 5 分鐘自動切換檔案
+- ✅ 批次寫入：每 2 秒批次寫入一次，提高效率
+
+#### 6.2 CSV 檔案格式
+- **欄位**：`timestamp,receivedAt,accelX,accelY,accelZ,gyroX,gyroY,gyroZ`
+- **時間戳記格式**：`2025/12/05 23:34:51.123`
+- **優點**：Excel 可以直接識別，無需手動轉換
+
+#### 6.3 檔案命名規則
+- **第一個檔案**：使用第一筆資料的接收時間命名
+  - 格式：`imu_data_YYYYMMDD_HHmmss.csv`
+  - 範例：`imu_data_20251205_233451.csv`
+- **後續檔案**：使用 5 分鐘倍數邊界時間命名
+  - 格式：`imu_data_YYYYMMDD_HHmmss.csv`（時間對齊到 5 分鐘倍數）
+  - 範例：
+    - `imu_data_20251205_233500.csv`（23:35:00 開始）
+    - `imu_data_20251205_234000.csv`（23:40:00 開始）
+
+#### 6.4 自動檔案分檔
+- **分檔間隔**：5 分鐘（300,000 毫秒）
+- **觸發條件**：當資料的 `receivedAt` 時間跨越 5 分鐘倍數邊界時自動切換檔案
+- **範例**：從 23:34:51 錄製到 23:40:00，會產生 3 個檔案
+
+#### 6.5 儲存位置
+- **目錄**：外部儲存應用專屬目錄 `/Android/data/com.example.smartbadmintonracket/files/IMU_Data/`
+- **權限**：不需要特殊權限（使用應用專屬目錄）
+
+#### 6.6 實際實現
+- **CSVManager.java**：`APP/android/app/src/main/java/com/example/smartbadmintonracket/csv/CSVManager.java`
+
+### 7. BLE 斷線處理
+
+#### 7.1 斷線檢測
+- ✅ 使用 Android BLE 協議的 `onConnectionStateChange` 回調檢測連接狀態
+- ✅ 不會因為幾毫秒的資料接收延遲就判定斷線（使用 BLE 連接監督超時機制）
+
+#### 7.2 斷線處理流程
+- ✅ **資源清理**：
+  - 關閉 GATT 連接
+  - 重置資料緩衝區
+  - 重置時間同步狀態
+  - 清理超時回調
+- ✅ **自動停止錄製**：
+  - 停止 Firebase 錄製
+  - 停止 CSV 錄製
+  - 關閉 CSV 檔案（確保所有資料都已寫入）
+- ✅ **UI 更新**：
+  - 更新連接狀態顯示
+  - 更新錄製按鈕狀態
+  - 顯示提示訊息：「設備已斷線，錄製已自動停止」
+  - 停止圖表更新
+  - 重置電壓濾波器
+
+#### 7.3 常見斷線原因
+- 物理斷線（電線斷裂、設備移動超出範圍）
+- 電池耗盡（設備自動關機）
+- 手動斷開（使用者主動斷開連接）
+- BLE 協議層斷線（連接監督超時）
+
+#### 7.4 實際實現
+- **BLEManager.java**：`APP/android/app/src/main/java/com/example/smartbadmintonracket/BLEManager.java`
+  - `onConnectionStateChange()` 方法
+- **MainActivity.java**：`APP/android/app/src/main/java/com/example/smartbadmintonracket/MainActivity.java`
+  - `onDisconnected()` 回調處理
+
+### 8. 遠端 AI 辨識
 
 #### 6.1 動作偵測
 - ✅ 偵測揮拍動作（根據加速度或角速度峰值）
@@ -399,6 +471,9 @@ app/src/main/java/com/example/smartbadmintonracket/
 ├── firebase/
 │   ├── FirebaseManager.java            # Firebase 管理器
 │   └── DataUploader.java               # 資料上傳器
+│
+├── csv/
+│   └── CSVManager.java                  # CSV 檔案管理器（本地儲存）
 │
 ├── recognition/
 │   ├── RecognitionManager.java         # 辨識管理器

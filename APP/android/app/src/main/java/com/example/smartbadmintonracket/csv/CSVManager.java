@@ -21,7 +21,7 @@ import java.util.Locale;
 /**
  * CSV 檔案管理器
  * 負責將 IMU 資料以 CSV 格式儲存到外部儲存
- * 每 10 分鐘自動切換檔案，時間對齊到 10 分鐘倍數
+ * 每 5 分鐘自動切換檔案，時間對齊到 5 分鐘倍數
  */
 public class CSVManager {
     private static final String TAG = "CSVManager";
@@ -31,8 +31,8 @@ public class CSVManager {
     private static final String FILE_EXTENSION = ".csv";
     private static final String DIRECTORY_NAME = "IMU_Data";
     
-    // 時間對齊配置（10 分鐘 = 600000 毫秒）
-    private static final long TIME_INTERVAL_MS = 10 * 60 * 1000; // 10 分鐘
+    // 時間對齊配置（5 分鐘 = 300000 毫秒）
+    private static final long TIME_INTERVAL_MS = 5 * 60 * 1000; // 5 分鐘
     
     // CSV 欄位標題（使用可讀的日期時間格式）
     private static final String CSV_HEADER = "timestamp,receivedAt,accelX,accelY,accelZ,gyroX,gyroY,gyroZ\n";
@@ -44,7 +44,7 @@ public class CSVManager {
     private Context context;
     private File currentFile;
     private FileWriter currentWriter;
-    private long currentFileStartTime; // 當前檔案對應的時間點（第一個檔案用第一筆資料時間，之後用 10 分鐘倍數）
+    private long currentFileStartTime; // 當前檔案對應的時間點（第一個檔案用第一筆資料時間，之後用 5 分鐘倍數）
     private boolean isRecordingMode = false;
     private boolean isInitialized = false;
     private boolean isFirstFile = true; // 是否為第一個檔案（用第一筆資料時間命名）
@@ -158,19 +158,9 @@ public class CSVManager {
                 isFirstFile = false;
                 fileJustOpened = true;
                 
-                // 設定當前檔案的結束時間點（下一個 10 分鐘倍數）
-                // 例如：22:54:27 -> 23:00:00
-                currentFileStartTime = alignTo10Minutes(firstDataTime);
-                
-                // 如果第一筆資料的時間正好是 10 分鐘倍數（例如：22:50:00），
-                // 則使用下一個 10 分鐘倍數（23:00:00）作為結束點
-                Calendar cal = Calendar.getInstance();
-                cal.setTimeInMillis(firstDataTime);
-                if (cal.get(Calendar.MINUTE) % 10 == 0 && cal.get(Calendar.SECOND) == 0 && cal.get(Calendar.MILLISECOND) == 0) {
-                    // 如果正好是 10 分鐘倍數，使用下一個 10 分鐘倍數作為結束點
-                    cal.add(Calendar.MINUTE, 10);
-                    currentFileStartTime = cal.getTimeInMillis();
-                }
+                // 設定當前檔案的結束時間點（下一個 5 分鐘倍數）
+                // 例如：23:34:51 -> 23:35:00
+                currentFileStartTime = alignTo5Minutes(firstDataTime);
                 
                 Log.d(TAG, "建立第一個檔案，使用第一筆資料時間命名: " + 
                     (currentFile != null ? currentFile.getName() : "null") +
@@ -197,15 +187,18 @@ public class CSVManager {
         }
         
         // 檢查是否需要切換檔案（基於 receivedAt）
-        // 從第二個檔案開始，使用 10 分鐘倍數時間點
-        long nextFileStartTime = alignTo10Minutes(data.receivedAt);
+        // 從第二個檔案開始，使用 5 分鐘倍數時間點
+        long nextFileStartTime = alignTo5Minutes(data.receivedAt);
         if (nextFileStartTime != currentFileStartTime) {
-            // 需要切換到新檔案（使用 10 分鐘倍數時間點）
-            Log.d(TAG, "時間已跨越 10 分鐘邊界，切換檔案");
+            // 需要切換到新檔案（使用 5 分鐘倍數時間點）
+            Log.d(TAG, "時間已跨越 5 分鐘邊界，切換檔案: " + 
+                new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date(currentFileStartTime)) +
+                " -> " + new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date(nextFileStartTime)));
             flushAndCloseFile();
             currentFileStartTime = nextFileStartTime;
             try {
-                openNewFile(currentFileStartTime);
+                // 使用當前 5 分鐘區塊的開始時間來命名檔案
+                openNewFile(getCurrent5MinuteBlock(data.receivedAt));
                 fileJustOpened = true;
                 Log.d(TAG, "切換到新檔案: " + (currentFile != null ? currentFile.getName() : "null"));
             } catch (Exception e) {
@@ -234,34 +227,42 @@ public class CSVManager {
     }
     
     /**
-     * 對齊時間到 10 分鐘倍數
-     * 例如：10:08:13 -> 10:10:00, 10:10:00 -> 10:10:00, 10:10:01 -> 10:20:00
-     * 規則：如果分鐘數是 10 的倍數，使用當前時間點；否則計算下一個 10 分鐘倍數
+     * 對齊時間到 5 分鐘倍數（用於判斷是否需要切換檔案）
+     * 總是返回下一個 5 分鐘倍數，即使當前時間已經是 5 分鐘倍數
+     * 例如：23:34:51 -> 23:35:00, 23:35:00 -> 23:40:00, 23:35:01 -> 23:40:00
      */
-    private long alignTo10Minutes(long timestamp) {
+    private long alignTo5Minutes(long timestamp) {
         Calendar cal = Calendar.getInstance();
         cal.setTimeInMillis(timestamp);
         
-        // 取得分鐘數
         int minutes = cal.get(Calendar.MINUTE);
-        int seconds = cal.get(Calendar.SECOND);
-        int milliseconds = cal.get(Calendar.MILLISECOND);
+        // 總是計算下一個 5 分鐘倍數
+        int alignedMinutes = ((minutes / 5) + 1) * 5;
         
-        int alignedMinutes;
-        
-        if (minutes % 10 == 0) {
-            // 如果已經是 10 分鐘倍數，使用當前時間點（秒和毫秒設為 0）
-            alignedMinutes = minutes;
-        } else {
-            // 計算下一個 10 分鐘倍數
-            alignedMinutes = ((minutes / 10) + 1) * 10;
+        if (alignedMinutes >= 60) {
+            cal.add(Calendar.HOUR_OF_DAY, 1);
+            alignedMinutes = alignedMinutes - 60;
         }
         
-        // 設定為對齊後的時間（秒和毫秒設為 0）
         cal.set(Calendar.MINUTE, alignedMinutes);
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
         
+        return cal.getTimeInMillis();
+    }
+    
+    /**
+     * 取得當前時間所在的 5 分鐘區塊的開始時間（用於檔案命名）
+     * 例如：23:34:51 -> 23:35:00, 23:35:00 -> 23:35:00, 23:35:01 -> 23:35:00
+     */
+    private long getCurrent5MinuteBlock(long timestamp) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(timestamp);
+        int minutes = cal.get(Calendar.MINUTE);
+        int current5MinBlock = (minutes / 5) * 5;
+        cal.set(Calendar.MINUTE, current5MinBlock);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
         return cal.getTimeInMillis();
     }
     
