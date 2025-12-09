@@ -2,6 +2,3 @@ fastapi
 uvicorn
 websockets
 pydantic
-pandas
-openpyxl
-requests
