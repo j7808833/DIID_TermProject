@@ -70,6 +70,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 }, 
                 child: const Text("Save & Reconnect")
               ),
+              
+              const Divider(height: 32),
+              
+              const Text("Sensor Calibration",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              const Text("Place the racket flat on the ground before calibrating.",
+                   style: TextStyle(fontSize: 14, color: Colors.grey)),
+              const SizedBox(height: 16),
+              Center(
+                child: provider.isCalibrating
+                    ? const Column(
+                        children: [
+                          CircularProgressIndicator(),
+                          SizedBox(height: 8),
+                          Text("Calibrating... Do not move the racket."),
+                        ],
+                      )
+                    : ElevatedButton.icon(
+                        onPressed: () {
+                          provider.startCalibration();
+                        },
+                        icon: const Icon(Icons.build),
+                        label: const Text("Start Zero Calibration"),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                        ),
+                      ),
+              ),
+              if (provider.isCalibrated)
+                  Padding(
+                      padding: const EdgeInsets.only(top: 16),
+                      child: Text("Calibration Active\nOffsets: Acc(${provider.accOffset[0].toStringAsFixed(2)}, ${provider.accOffset[1].toStringAsFixed(2)}, ${provider.accOffset[2].toStringAsFixed(2)})",
+                          textAlign: TextAlign.center, style: const TextStyle(color: Colors.green)),
+                  ),
             ],
           );
         },

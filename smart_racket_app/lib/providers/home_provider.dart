@@ -32,6 +32,13 @@ class HomeProvider extends ChangeNotifier {
   double sensitivity = 2.0; // Default threshold
   // String serverIp = "192.168.1.100"; // Local
   String serverIp = "diid-termproject-v2.onrender.com"; // Cloud
+
+  // Calibration State
+  bool isCalibrating = false;
+  List<IMUFrame> _calibrationFrames = [];
+  List<double> accOffset = [0.0, 0.0, 0.0];
+  List<double> gyroOffset = [0.0, 0.0, 0.0];
+  bool isCalibrated = false;
   
   HomeProvider() {
     _init();
@@ -52,6 +59,13 @@ class HomeProvider extends ChangeNotifier {
   
   // --- Actions ---
   
+  void startCalibration() {
+    isCalibrating = true;
+    _calibrationFrames.clear();
+    notifyListeners();
+    print("Calibration Started...");
+  }
+
   Future<void> startScan() async {
     // 1. Request Permissions
     Map<Permission, PermissionStatus> statuses = await [
@@ -171,15 +185,45 @@ class HomeProvider extends ChangeNotifier {
   }
 
   void _handleNewFrame(IMUFrame frame) {
+    IMUFrame processedFrame = frame;
+
+    // 0. Calibration Logic
+    if (isCalibrating) {
+      _calibrationFrames.add(frame);
+      // Collect 50 frames (approx 1 sec if 50Hz)
+      if (_calibrationFrames.length >= 50) {
+        _finishCalibration();
+      }
+      return; // Do not process or graph during calibration
+    }
+    
+    // Apply Calibration
+    if (isCalibrated) {
+      processedFrame = IMUFrame(
+        timestamp: frame.timestamp,
+        acc: [
+          frame.acc[0] - accOffset[0],
+          frame.acc[1] - accOffset[1],
+          frame.acc[2] - accOffset[2],
+        ],
+        gyro: [
+          frame.gyro[0] - gyroOffset[0],
+          frame.gyro[1] - gyroOffset[1],
+          frame.gyro[2] - gyroOffset[2],
+        ],
+        voltage: frame.voltage,
+      );
+    }
+
     // 1. Update Real-time Graph (Keep last 50 points for display)
-    recentFrames.add(frame);
+    recentFrames.add(processedFrame);
     if (recentFrames.length > 50) {
       recentFrames.removeAt(0);
     }
-    batteryVoltage = frame.voltage;
+    batteryVoltage = processedFrame.voltage;
     
     // 2. Add to Buffer Manager
-    List<IMUFrame>? window = _bufferManager.addFrame(frame);
+    List<IMUFrame>? window = _bufferManager.addFrame(processedFrame);
     
     // 3. Trigger?
     if (window != null) {
@@ -193,6 +237,49 @@ class HomeProvider extends ChangeNotifier {
     notifyListeners();
   }
   
+  void _finishCalibration() {
+    // Calculate Averages
+    double sumAx = 0, sumAy = 0, sumAz = 0;
+    double sumGx = 0, sumGy = 0, sumGz = 0;
+    int count = _calibrationFrames.length;
+
+    for (var f in _calibrationFrames) {
+      sumAx += f.acc[0];
+      sumAy += f.acc[1];
+      sumAz += f.acc[2];
+      
+      sumGx += f.gyro[0];
+      sumGy += f.gyro[1];
+      sumGz += f.gyro[2];
+    }
+
+    // Average
+    double avgAx = sumAx / count;
+    double avgAy = sumAy / count;
+    double avgAz = sumAz / count;
+    
+    double avgGx = sumGx / count;
+    double avgGy = sumGy / count;
+    double avgGz = sumGz / count;
+
+    // Set Offsets
+    // Target: calibrated_Z = measured_Z - offset_Z => 1.0 = avgAz - offset_Z => offset_Z = avgAz - 1.0
+    // Target: calibrated_X = measured_X - offset_X => 0.0 = avgAx - offset_X => offset_X = avgAx
+    
+    accOffset = [avgAx, avgAy, avgAz - 1.0];
+    gyroOffset = [avgGx, avgGy, avgGz];
+    
+    isCalibrating = false;
+    isCalibrated = true;
+    _calibrationFrames.clear();
+
+    print("Calibration Done!");
+    print("Acc Offset: $accOffset");
+    print("Gyro Offset: $gyroOffset");
+    
+    notifyListeners();
+  }
+
   void _handleServerResponse(dynamic message) {
     // Parse JSON
     // {"type": "Smash", "speed": 185.5, "display": true, "message": "..."}
