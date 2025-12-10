@@ -138,15 +138,16 @@ void readAndSendSensor() {
   float raw = rawSum / (float)samples;
   
   // Calc: V = Raw * (3.6 / 1023.0) * (1510.0 / 510.0)
-  // Factor = ~10.42
-  // We also found that for some boards, a small correction is needed due to 
-  // reference offset or resistor tolerance.
-  // User reported 3.79V when expecting 4.2V (Ratio ~1.108).
-  // The high impedance is likely the cause (reading lower).
-  // With dummy read, it should improve. If still low, we might need a cal factor.
-  // Let's stick to the theoretical formula first with better sampling method.
+  // Theoretical Factor = ~10.42
   
   float v = raw * (3600.0f / 1023.0f) * (1510.0f / 510.0f);
+
+  // Calibration:
+  // User measured 3.53V when App showed 3.79V.
+  // Ratio = 3.53 / 3.79 = 0.9314
+  // We apply this correction factor.
+  v *= 0.9314f;
+
   packet.voltage = (uint16_t)v;
 
   // 4. Checksum (XOR)
