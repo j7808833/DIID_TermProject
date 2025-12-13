@@ -21,8 +21,10 @@ flowchart TD
     Loop --> PollBLE[BLE.poll 處理事件]
     PollBLE --> CheckConnection{檢查 BLE 連接狀態}
     
-    CheckConnection -->|未連接| NoConnection[未連接模式]
-    CheckConnection -->|已連接| Connected[已連接模式]
+    // checkVoltageAndSleep() 被註解掉，故暫不執行省電檢查
+    
+    CheckConnection -->|未連接| NoConnection
+    CheckConnection -->|已連接| Connected
     
     NoConnection --> CheckDataTime1{到達資料輸出時間?<br/>20ms = 50Hz}
     CheckDataTime1 -->|是| ReadIMU1[讀取 IMU 資料<br/>減去校正偏移量]
@@ -33,11 +35,13 @@ flowchart TD
     UpdateTime1 --> Delay1[延遲 10ms]
     Delay1 --> PollBLE
     
-    Connected --> FirstCalibration{首次連接?<br/>未校正?}
+    Connected --> TimeSync{收到時間同步?}
+    TimeSync -->|是| UpdateTimeBase[更新基準時間]
+    TimeSync -->|否| FirstCalibration
     FirstCalibration -->|是| Calibrate[執行 IMU 校正<br/>採樣 100 次]
     FirstCalibration -->|否| CheckDataTime2{到達資料輸出時間?<br/>20ms = 50Hz}
     
-    Calibrate --> CalcOffset[計算偏移量<br/>加速度 Z 軸減 1g]
+    Calibrate --> CalcOffset[計算偏移量<br/>加速度Offset設為0<br/>陀螺儀計算平均偏移]
     CalcOffset --> SetCalibrationDone[設定校正完成標記]
     SetCalibrationDone --> FirstConnection[首次連接處理<br/>初始化電壓緩存]
     FirstConnection --> CheckDataTime2
@@ -88,9 +92,9 @@ flowchart TD
     CheckCount -->|否| Loop100
     CheckCount -->|是| CalcAvg[計算平均值]
     
-    CalcAvg --> CalcOffsetAX[offsetAX = sumAX / 100]
-    CalcOffsetAX --> CalcOffsetAY[offsetAY = sumAY / 100]
-    CalcOffsetAY --> CalcOffsetAZ[offsetAZ = sumAZ / 100 - 1.0<br/>減去重力加速度]
+    CalcAvg --> CalcOffsetAX[offsetAX = 0]
+    CalcOffsetAX --> CalcOffsetAY[offsetAY = 0]
+    CalcOffsetAY --> CalcOffsetAZ[offsetAZ = 0]
     CalcOffsetAZ --> CalcOffsetGX[offsetGX = sumGX / 100]
     CalcOffsetGX --> CalcOffsetGY[offsetGY = sumGY / 100]
     CalcOffsetGY --> CalcOffsetGZ[offsetGZ = sumGZ / 100]
@@ -218,15 +222,15 @@ gantt
 
 ## 關鍵參數說明
 
-| 參數 | 數值 | 說明 |
-|------|------|------|
-| 資料輸出頻率 | 50Hz | 每 20ms 輸出一次 |
-| BLE 傳輸頻率 | 50Hz | 每 20ms 傳輸一次 |
-| 電壓讀取間隔 | 10 秒 | 每 10 秒更新一次電壓緩存 |
-| 電壓採樣次數 | 30 次 | 每次讀取 30 筆取平均 |
-| IMU 校正採樣 | 100 次 | 校正時採樣 100 次 |
-| I2C 時鐘頻率 | 400kHz | 高速模式 |
-| 串列通訊速率 | 9600 bps | 除錯用 |
+| 參數         | 數值     | 說明                                      |
+| ------------ | -------- | ----------------------------------------- |
+| 資料輸出頻率 | 50Hz     | 每 20ms 輸出一次                          |
+| BLE 傳輸頻率 | 50Hz     | 每 20ms 傳輸一次                          |
+| 電壓讀取間隔 | 10 秒    | 每 10 秒更新一次電壓緩存                  |
+| 電壓採樣次數 | 30 次    | 每次讀取 30 筆取平均                      |
+| IMU 校正採樣 | 100 次   | 校正時採樣 100 次                         |
+| I2C 時鐘頻率 | 400kHz   | 高速模式                                  |
+| 串列通訊速率 | 9600 bps | 除錯用                                    |
 | 資料封包大小 | 30 bytes | 時間戳 4 + 加速度 12 + 陀螺儀 12 + 電壓 2 |
 
 ## 資料流程說明

@@ -29,6 +29,7 @@
 6. **CSV 本地資料儲存** - 將資料儲存為 CSV 格式，支援 Excel 直接開啟
 7. **智能斷線處理** - BLE 斷線時自動停止錄製並清理資源
 8. **遠端 AI 辨識** - 接收伺服器辨識結果（5種姿態 + 球速）
+9. **時間同步** - 校正時自動同步手機時間至感測器
 
 ---
 
@@ -55,6 +56,7 @@
 #### 2.1 校正觸發
 - ✅ 提供「零點校正」按鈕
 - ✅ 校正前提示使用者將球拍靜止平置
+- ✅ 校正觸發時自動同步手機時間到感測器
 - ✅ 校正過程中顯示進度
 
 #### 2.2 校正邏輯
@@ -511,8 +513,9 @@ app/src/main/java/com/example/smartbadmintonracket/
    - gyroX_offset = mean(gyroX)
    - gyroY_offset = mean(gyroY)
    - gyroZ_offset = mean(gyroZ)
-7. 儲存校正值至 SharedPreferences
-8. 顯示「校正完成」訊息
+7. 同步當前時間到感測器（時間同步）
+8. 儲存校正值至 SharedPreferences
+9. 顯示「校正完成」訊息
 ```
 
 #### 校正資料模型
