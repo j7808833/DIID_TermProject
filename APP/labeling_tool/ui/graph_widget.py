@@ -234,3 +234,27 @@ class GraphWidget(QWidget):
             self._plot_acc.setXRange(new_min, new_max, padding=0)
             # Gyro is linked, so it updates automatically
 
+    def add_marker(self, t_ms, label_type):
+        """Add a vertical line or text marker at t_ms"""
+        # Get color
+        from core.constants import LabelType
+        color = LabelType.get_color(label_type)
+        
+        # Create separate lines for each plot
+        line_acc = pg.InfiniteLine(pos=t_ms, angle=90, pen=pg.mkPen(color, width=2, style=Qt.DashLine))
+        line_gyro = pg.InfiniteLine(pos=t_ms, angle=90, pen=pg.mkPen(color, width=2, style=Qt.DashLine))
+        
+        self._plot_acc.addItem(line_acc)
+        self._plot_gyro.addItem(line_gyro)
+        
+        # Store for Undo as a tuple
+        if not hasattr(self, '_markers'):
+            self._markers = []
+        self._markers.append((line_acc, line_gyro))
+        
+    def remove_last_marker(self):
+        if hasattr(self, '_markers') and self._markers:
+            line_acc, line_gyro = self._markers.pop()
+            self._plot_acc.removeItem(line_acc)
+            self._plot_gyro.removeItem(line_gyro)
+

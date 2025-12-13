@@ -11,18 +11,21 @@ from PySide6.QtCore import Qt
 from ui.graph_widget import GraphWidget
 from ui.video_player import VideoPlayer
 from ui.sync_widget import SyncWidget
+from ui.label_widget import LabelWidget
 from core.csv_reader import CSVReader
 from core.sync_manager import SyncManager
+from core.label_manager import LabelManager
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("SmartRacket Labeling Tool (Phase 3: Alignment)")
-        self.resize(1200, 900)
+        self.setWindowTitle("SmartRacket Labeling Tool (Phase 4: Full System)")
+        self.resize(1200, 950)
         
         # Components
         self.csv_reader = CSVReader()
         self.sync_manager = SyncManager()
+        self.label_manager = LabelManager()
         
         # State
         self.is_sync_locked = True
@@ -48,6 +51,10 @@ class MainWindow(QMainWindow):
         # 3. Graph Widget (Area C)
         self.graph_widget = GraphWidget()
         self.splitter.addWidget(self.graph_widget)
+
+        # 4. Label Widget (Area D - Bottom)
+        self.label_widget = LabelWidget()
+        self.layout.addWidget(self.label_widget)
         
         # Set initial sizes
         self.splitter.setSizes([450, 450])
@@ -71,6 +78,44 @@ class MainWindow(QMainWindow):
         self.sync_widget.reset_sync.connect(self._on_reset_sync)
         self.sync_widget.lock_toggled.connect(self._on_lock_toggled)
         
+        # Label Signals
+        self.label_widget.label_triggered.connect(self._on_label_triggered)
+        self.label_widget.undo_triggered.connect(self._on_undo_triggered)
+        
+    def _on_label_triggered(self, label_type):
+        """Handle Label Button Click or Hotkey"""
+        t_csv = self.current_t_csv
+        
+        # Save Label
+        success = self.label_manager.save_label(label_type, t_csv)
+        
+        if success:
+            # 1. Show Marker on Graph
+            self.graph_widget.add_marker(t_csv, label_type)
+            # 2. Flash status or log
+            print(f"Labeled: {label_type} at {t_csv}")
+        else:
+            # Show error (e.g. out of bounds)
+            from PySide6.QtWidgets import QMessageBox
+            QMessageBox.warning(self, "Label Failed", "Could not save label (Out of bounds?)")
+
+    def _on_undo_triggered(self):
+        self.label_manager.undo_last_label()
+        # Remove last marker from graph (Need to implement remove_last_marker in GraphWidget)
+        self.graph_widget.remove_last_marker()
+        
+    def keyPressEvent(self, event):
+        # Handle hotkeys globally if widget doesn't catch them
+        # 49 = '1', 53 = '5'
+        key = event.key()
+        if Qt.Key_1 <= key <= Qt.Key_5:
+            label_type = key - Qt.Key_0 # 1..5
+            self._on_label_triggered(label_type)
+        elif key == Qt.Key_Z:
+            self._on_undo_triggered()
+        else:
+            super().keyPressEvent(event)
+            
     def _on_video_position_changed(self, t_vid):
         if not self.is_sync_locked:
             return
@@ -171,6 +216,10 @@ class MainWindow(QMainWindow):
                 
                 # Show Stats
                 stats = self.csv_reader.get_stats()
+                
+                # Init Label Manager
+                self.label_manager.set_context(self.csv_reader, self.sync_manager)
+                
                 from PySide6.QtWidgets import QMessageBox
                 msg = (f"Loaded successfully!\n\n"
                        f"Duration: {stats.get('duration_str', '?')}\n"
