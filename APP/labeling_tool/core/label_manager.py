@@ -11,9 +11,9 @@ class LabelManager:
     Window Size: 80 frames (60 past + current + 19 future) @ 50Hz
     """
     
-    WINDOW_SIZE = 80
-    PRE_WINDOW = 60
-    POST_WINDOW = 19
+    WINDOW_SIZE = 40
+    PRE_WINDOW = 30
+    POST_WINDOW = 9
     
     def __init__(self, output_dir="labels"):
         self.output_dir = output_dir
@@ -23,6 +23,12 @@ class LabelManager:
         self._current_session_id = "default_session"
         self._csv_reader = None # Ref to CSV reader for data
         self._sync_manager = None # Ref for full sync details
+        
+    def set_window_size(self, pre, post):
+        self.PRE_WINDOW = pre
+        self.POST_WINDOW = post
+        self.WINDOW_SIZE = pre + post + 1
+        print(f"Window updated: Pre={pre}, Post={post}, Total={self.WINDOW_SIZE}")
         
     def set_context(self, csv_reader, sync_manager, session_id=None):
         self._csv_reader = csv_reader
@@ -128,7 +134,30 @@ class LabelManager:
             with open(path, 'w', encoding='utf-8') as f:
                 f.writelines(lines)
                 
-            print("Undo successful.")
+            print(f"Undo successful.")
             
         except Exception as e:
             print(f"Error undoing: {e}")
+
+    def load_labels(self, file_path):
+        """
+        Load labels from a JSONL file.
+        Returns a list of (timestamp_csv_ms, label_type_int)
+        """
+        results = []
+        if not os.path.exists(file_path):
+            return results
+            
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                for line in f:
+                    if not line.strip(): continue
+                    record = json.loads(line)
+                    # Extract info
+                    t_ms = record.get('timestamp_csv_ms', 0)
+                    l_id = record.get('label_id', 5) # Default to Other if missing
+                    results.append((t_ms, l_id))
+        except Exception as e:
+            print(f"Error loading labels: {e}")
+            
+        return results

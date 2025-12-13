@@ -81,17 +81,30 @@ class MainWindow(QMainWindow):
         # Label Signals
         self.label_widget.label_triggered.connect(self._on_label_triggered)
         self.label_widget.undo_triggered.connect(self._on_undo_triggered)
+        self.label_widget.config_triggered.connect(self._on_config_triggered)
         
+    def _on_config_triggered(self):
+        from ui.config_dialog import ConfigDialog
+        dialog = ConfigDialog(self.label_manager.PRE_WINDOW, self.label_manager.POST_WINDOW, self)
+        if dialog.exec():
+            pre, post = dialog.get_values()
+            self.label_manager.set_window_size(pre, post)
+            
     def _on_label_triggered(self, label_type):
         """Handle Label Button Click or Hotkey"""
-        t_csv = self.current_t_csv
+        # Force get current cursor pos from Graph for WYSIWYG
+        t_csv = self.graph_widget.get_cursor_position()
         
         # Save Label
         success = self.label_manager.save_label(label_type, t_csv)
         
         if success:
             # 1. Show Marker on Graph
-            self.graph_widget.add_marker(t_csv, label_type)
+            # Calculate window ms (20ms per frame)
+            pre_ms = self.label_manager.PRE_WINDOW * 20
+            post_ms = self.label_manager.POST_WINDOW * 20
+            self.graph_widget.add_marker(t_csv, label_type, window_ms=(pre_ms, post_ms))
+            
             # 2. Flash status or log
             print(f"Labeled: {label_type} at {t_csv}")
         else:
@@ -191,6 +204,13 @@ class MainWindow(QMainWindow):
         load_csv_action.triggered.connect(self._load_csv_files)
         file_menu.addAction(load_csv_action)
         
+        file_menu.addSeparator()
+        
+        # Load Labels Action
+        load_labels_action = QAction("Load Labels...", self)
+        load_labels_action.triggered.connect(self._load_labels)
+        file_menu.addAction(load_labels_action)
+        
     def _load_video(self):
         file_path, _ = QFileDialog.getOpenFileName(
             self, "Open Video File", "", "Video Files (*.mp4 *.avi *.mov)"
@@ -198,6 +218,32 @@ class MainWindow(QMainWindow):
         if file_path:
             print(f"Loading video: {file_path}")
             self.video_player.load_video(file_path)
+            
+    def _load_labels(self):
+        file_path, _ = QFileDialog.getOpenFileName(
+            self, "Load Labels (JSONL)", "labels", "JSONL Files (*.jsonl);;All Files (*)"
+        )
+        if not file_path:
+            return
+            
+        print(f"Loading labels from: {file_path}")
+        labels = self.label_manager.load_labels(file_path)
+        
+        if labels:
+            count = 0
+            # Get current config for visualization
+            pre_ms = self.label_manager.PRE_WINDOW * 20
+            post_ms = self.label_manager.POST_WINDOW * 20
+            
+            for t_ms, l_type in labels:
+                self.graph_widget.add_marker(t_ms, l_type, window_ms=(pre_ms, post_ms))
+                count += 1
+            print(f"Resorted {count} markers.")
+            
+            from PySide6.QtWidgets import QMessageBox
+            QMessageBox.information(self, "Load Labels", f"Successfully loaded {count} labels.")
+        else:
+             print("No labels found or error.")
         
     def _load_csv_files(self):
         file_paths, _ = QFileDialog.getOpenFileNames(

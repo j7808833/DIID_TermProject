@@ -10,6 +10,7 @@ class LabelWidget(QWidget):
     
     label_triggered = Signal(int) # LabelType
     undo_triggered = Signal()
+    config_triggered = Signal()
     
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -47,6 +48,14 @@ class LabelWidget(QWidget):
         btn_undo = QPushButton("Undo (Z)")
         btn_undo.clicked.connect(self.undo_triggered.emit)
         layout.addWidget(btn_undo)
+        
+        # Spacer
+        layout.addSpacing(10)
+        
+        # Config Button
+        btn_config = QPushButton("⚙ Config")
+        btn_config.clicked.connect(self.config_triggered.emit)
+        layout.addWidget(btn_config)
 
     def keyPressEvent(self, event):
         # Allow widget to handle keys if focused, 

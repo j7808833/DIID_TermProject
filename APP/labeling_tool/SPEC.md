@@ -195,7 +195,28 @@ Android App `CSVManager.java` 產出的標準格式：
 
 ---
 
-# 8. 快捷鍵總表
+## 6. 進階功能 (Phase 4.5 - User Requested)
+
+### 6.1 自訂擷取視窗 (Configurable Windowing)
+*   **Data Slicing:**
+    *   **Window Size:** Defaults to **40 frames** (approx. 0.8s at 50Hz).
+    *   **Offset:**
+        *   **Pre-Window:** **30 frames** before the labeled timestamp.
+        *   **Post-Window:** **9 frames** after the labeled timestamp.
+        *   *Note: This includes the labeled frame itself.*
+*   **介面**: 位於選單列 `Settings` -> `Label Config` 或底部標註列的 `Config` 按鈕。
+
+### 6.2 智慧導航 (Smart Navigation)
+*   **需求**: 快速跳轉至下一個擊球點（波峰）。
+*   **原理**: 搜尋合力 (Magnitude) 超過閾值的時間點。
+*   **介面**: 位於波形圖上方控制列。
+    *   **Threshold Input**: 設定閾值 (單位: g, 預設 3.0g)。
+    *   **Next Peak Button**: `>>` 按鈕，點擊後游標自動跳轉至下一個波峰。
+    *   **邏輯**: 從當前游標位置 + Buffer (e.g., 0.5s) 開始搜尋，避免重複停在同一個波峰。
+
+---
+
+# 7. 快捷鍵列表 (Hotkeys)
 
 * **Space**: Play / Pause
 * **Left / Right**: 上/下一幀 (Frame)
