@@ -1,0 +1,9 @@
+verbose logging: disabled
+------ MEMORY INFO EXTRA (/proc/meminfo_extra) ------
+SystemHeap:       159692 kB
+SystemHeapPool:    93748 kB
+VmallocAPIsize:   110752 kB
+KgslSharedmem:     44372 kB
+ZramDevice:       109964 kB
+
+*** Error dumping /proc/sec_log (SEC LOG): No such file or directory

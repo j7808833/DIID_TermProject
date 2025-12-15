@@ -1,0 +1,164 @@
++ [bC | 2018/01/03 05:34:55 | A715FZHU1ATA7]
+--update_package=@/cache/recovery/block.map
+--locale=zh-Hant-TW
+--carry_out=open_fota
+--update_org_package=/data/fota/update.zip
+NP
+reboot_reason=Thread-7:21649 RecoverySystem installPackage: --update_package=@/cache/recovery/bloc
+[S]  109.6G
+[E]  109.6G
+-
++ [_N | 2018/01/25 23:16:20 | A715FZHU2ATD3]
+--update_package=@/cache/recovery/block.map
+--locale=zh-Hant-TW
+--carry_out=open_fota
+--update_org_package=/data/fota/update.zip
+NP
+reboot_reason=Thread-8:3779 RecoverySystem installPackage: --update_package=@/cache/recovery/block
+[S]  109.6G
+[E]  109.6G
+-
++ [Ch | 2018/03/26 07:20:53 | A715FZHU2ATE8]
+--update_package=@/cache/recovery/block.map
+--locale=zh-Hant-TW
+--carry_out=open_fota
+--update_org_package=/data/fota/update.zip
+NP
+reboot_reason=Thread-9:28813 RecoverySystem installPackage: --update_package=@/cache/recovery/bloc
+[S]  109.6G
+[E]  109.6G
+-
++ [ke | 2018/05/01 06:08:35 | A715FZHU2ATG5]
+--update_package=@/cache/recovery/block.map
+--locale=zh-Hant-TW
+--carry_out=open_fota
+--update_org_package=/data/fota/update.zip
+NP
+reboot_reason=Thread-8:23289 RecoverySystem installPackage: --update_package=@/cache/recovery/bloc
+[S]  109.6G
+[E]  109.6G
+-
++ [I] | 2018/06/15 12:29:12 | A715FZHU3ATH8]
+--update_package=@/cache/recovery/block.map
+--locale=zh-Hant-TW
+--carry_out=open_fota
+--update_org_package=/data/fota/update.zip
+NP
+reboot_reason=Thread-10:31846 RecoverySystem installPackage: --update_package=@/cache/recovery/blo
+[S]  109.6G
+[E]  109.6G
+-
++ [tm | 2018/08/07 12:09:31 | A715FZHU3ATJ2]
+--update_package=@/cache/recovery/block.map
+--locale=zh-Hant-TW
+--carry_out=open_fota
+--update_org_package=/data/fota/update.zip
+NP
+reboot_reason=Thread-15:22690 RecoverySystem installPackage: --update_package=@/cache/recovery/blo
+[S]  109.6G
+[E]  109.6G
+-
++ [S_ | 2018/12/04 03:23:12 | A715FZHU3ATK1]
+--update_package=@/cache/recovery/block.map
+--locale=zh-Hant-TW
+--carry_out=open_fota
+--update_org_package=/data/fota/update.zip
+NP
+reboot_reason=Thread-8:22835 RecoverySystem installPackage: --update_package=@/cache/recovery/bloc
+[S]  109.6G
+[E]  109.6G
+-
++ [\x | 2018/12/04 03:50:32 | A715FZHS3AUA8]
+--update_package=@/cache/recovery/block.map
+--locale=zh-Hant-TW
+--carry_out=open_fota
+--update_org_package=/data/fota/update.zip
+NP
+reboot_reason=Thread-15:19223 RecoverySystem installPackage: --update_package=@/cache/recovery/blo
+[S]  109.6G
+[E]  109.6G
+-
++ [lG | 2018/05/31 01:13:22 | A715FZHU4BUC1]
+--update_package=@/cache/recovery/block.map
+--locale=zh-Hant-TW
+--carry_out=open_fota
+--update_org_package=/data/fota/update.zip
+NP | OFFSRC: SOFT / ONSRC: PON1
+reboot_reason=Thread-5:12631 RecoverySystem installPackage: --update_package=@/cache/recovery/bloc
++ [vn | 2018/05/31 07:58:58 | A715FZHU5BUF2]
+--update_package=@/cache/recovery/block.map
+--locale=zh-Hant-TW
+--carry_out=open_fota
+--update_org_package=/data/fota/update.zip
+NP | OFFSRC: SOFT / ONSRC: PON1
+reboot_reason=Thread-12:8716 RecoverySystem installPackage: --update_package=@/cache/recovery/bloc
++ [NN | 2018/06/25 22:11:54 | A715FZHU6BUH1]
+--update_package=@/cache/recovery/block.map
+--locale=zh-Hant-TW
+--carry_out=open_fota
+--update_org_package=/data/fota/update.zip
+NP | OFFSRC: SOFT / ONSRC: PON1
+reboot_reason=Thread-6:19668 RecoverySystem installPackage: --update_package=@/cache/recovery/bloc
++ [wV | 2018/10/18 20:29:14 | A715FZHS7BUJ1]
+--update_package=@/cache/recovery/block.map
+--locale=zh-Hant-TW
+--carry_out=open_fota
+--update_org_package=/data/fota/update.zip
+NP | OFFSRC: SOFT / ONSRC: PON1
+reboot_reason=Thread-5:25527 RecoverySystem installPackage: --update_package=@/cache/recovery/bloc
++ [Ts | 2018/12/31 14:13:02 | A715FZHU8BUL5]
+--update_package=@/cache/recovery/block.map
+--locale=zh-Hant-TW
+--carry_out=open_fota
+--update_org_package=/data/fota/update.zip
+NP | OFFSRC:(PS_HOLD,SOFT) / ONSRC:(HARDRST,PON1)
+reboot_reason=Thread-7:27936 RecoverySystem installPackage: --update_package=@/cache/recovery/bloc
++ [si | 2018/06/30 04:38:17 | A715FZHU8CVD1]
+--update_package=@/cache/recovery/block.map
+--locale=zh-Hant-TW
+--carry_out=open_fota
+--update_org_package=/data/fota/update.zip
+NP | OFFSRC:(PS_HOLD,SOFT) / ONSRC:(HARDRST,PON1)
+reboot_reason=Thread-6:9283 RecoverySystem installPackage: --update_package=@/cache/recovery/block
++ [el | 2018/11/29 05:30:58 | A715FZHU8CVI4]
+--update_package=@/cache/recovery/block.map
+--locale=zh-Hant-TW
+--carry_out=open_fota
+--update_org_package=/data/fota/update.zip
+NP | OFFSRC:(PS_HOLD,SOFT) / ONSRC:(HARDRST,PON1)
+reboot_reason=Thread-6:14037 RecoverySystem installPackage: --update_package=@/cache/recovery/bloc
++ [Gc | 2018/12/08 07:23:45 | A715FZHU8DVK1]
+--update_package=@/cache/recovery/block.map
+--locale=zh-Hant-TW
+--carry_out=open_fota
+--update_org_package=/data/fota/update.zip
+NP | OFFSRC:(PS_HOLD,SOFT) / ONSRC:(HARDRST,PON1)
+reboot_reason=Thread-7:15981 RecoverySystem installPackage: --update_package=@/cache/recovery/bloc
++ [jv | 2018/02/18 14:17:14 | A715FZHU8DWB5]
+--update_package=@/cache/recovery/block.map
+--locale=zh-Hant-TW
+--carry_out=open_fota
+--update_org_package=/data/fota/update.zip
+NP | OFFSRC:(PS_HOLD,SOFT) / ONSRC:(HARDRST,PON1)
+reboot_reason=Thread-6:9746 RecoverySystem installPackage: --update_package=@/cache/recovery/block
++ [qQ | 2018/01/25 14:29:13 | A715FZHU9DWE1]
+--update_package=@/cache/recovery/block.map
+--locale=zh-Hant-TW
+--carry_out=open_fota
+--update_org_package=/data/fota/update.zip
+NP | OFFSRC:(PS_HOLD,SOFT) / ONSRC:(HARDRST,PON1)
+reboot_reason=Thread-6:3968 RecoverySystem installPackage: --update_package=@/cache/recovery/block
++ [gX | 2018/03/08 04:58:27 | A715FZHU9DWH4]
+--update_package=@/cache/recovery/block.map
+--locale=zh-Hant-TW
+--carry_out=open_fota
+--update_org_package=/data/fota/update.zip
+NP | OFFSRC:(PS_HOLD,SOFT) / ONSRC:(HARDRST,PON1)
+reboot_reason=Thread-5:28272 RecoverySystem installPackage: --update_package=@/cache/recovery/bloc
++ [xF | 2018/07/22 04:37:51 | A715FZHSADXB1]
+--wipe_data
+--requested_time=2025/12/05 23:44:23.656
+--reason=MasterClearConfirm,2024-01-01T00:00:01Z
+--locale=zh-Hant-TW
+NP | OFFSRC:(PS_HOLD,SOFT) / ONSRC:(HARDRST,PON1)
+reboot_reason=Reboot:7912 RecoverySystemMasterClearConfirm,2024-01-01T00:00:01Z

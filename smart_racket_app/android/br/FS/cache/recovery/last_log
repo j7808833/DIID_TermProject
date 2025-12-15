@@ -1,0 +1,813 @@
+[    0.000761][xF-A][6oo1] recovery tmp log path : /efs/recovery/tmp_recovery.log
+[    0.000900][xF-A][6oo1] init_extra_history() : /efs/recovery/extra_history exists
+[    0.000933][xF-A][6oo1] no /efs/recovery/tmp_recovery.log file -> normal operation
+[    0.000963][xF-A][6oo1]
+[    0.000991][xF-A][6oo1] [collecting table information 2]
+[    0.001020][xF-A][6oo1] recovery filesystem table
+[    0.001049][xF-A][6oo1] =========================
+[    0.001077][xF-A][6oo1]   0 /system  ext4 system 0
+[    0.001104][xF-A][6oo1]   1 /system  f2fs system 0
+[    0.001133][xF-A][6oo1]   2 /system  erofs system 0
+[    0.001161][xF-A][6oo1]   3 /system_ext  ext4 system_ext 0
+[    0.001188][xF-A][6oo1]   4 /vendor  ext4 vendor 0
+[    0.001216][xF-A][6oo1]   5 /odm  ext4 odm 0
+[    0.001244][xF-A][6oo1]   6 /product  ext4 product 0
+[    0.001272][xF-A][6oo1]   7 /boot  emmc /dev/block/bootdevice/by-name/boot 0
+[    0.001301][xF-A][6oo1]   8 /recovery  emmc /dev/block/bootdevice/by-name/recovery 0
+[    0.001330][xF-A][6oo1]   9 /metadata  ext4 /dev/block/bootdevice/by-name/metadata 0
+[    0.001358][xF-A][6oo1]   10 /data  f2fs /dev/block/bootdevice/by-name/userdata -16384
+[    0.001387][xF-A][6oo1]   11 /cache  ext4 /dev/block/bootdevice/by-name/cache 0
+[    0.001415][xF-A][6oo1]   12 /sdcard  sdfat /dev/block/mmcblk0p1 0
+[    0.001448][xF-A][6oo1]   13 /efs  ext4 /dev/block/bootdevice/by-name/sec_efs 0
+[    0.001477][xF-A][6oo1]   14 /sec_efs  ext4 /dev/block/bootdevice/by-name/sec_efs 0
+[    0.001505][xF-A][6oo1]   15 /carrier  ext4 /dev/block/bootdevice/by-name/carrier 0
+[    0.001533][xF-A][6oo1]   16 /preload  ext4 /dev/block/bootdevice/by-name/hidden 0
+[    0.001567][xF-A][6oo1]   17 /modem  emmc /dev/block/bootdevice/by-name/apnhlos 0
+[    0.001596][xF-A][6oo1]   18 /mdm  emmc /dev/block/bootdevice/by-name/modem 0
+[    0.001624][xF-A][6oo1]   19 /dsp  emmc /dev/block/bootdevice/by-name/dsp 0
+[    0.001652][xF-A][6oo1]   20 /misc  emmc /dev/block/bootdevice/by-name/misc 0
+[    0.001681][xF-A][6oo1]   21 /dtbo  emmc /dev/block/bootdevice/by-name/dtbo 0
+[    0.001709][xF-A][6oo1]   22 /prism  ext4 /dev/block/bootdevice/by-name/prism 0
+[    0.001737][xF-A][6oo1]   23 /optics  ext4 /dev/block/bootdevice/by-name/optics 0
+[    0.001770][xF-A][6oo1]   24 /vbmeta_samsung  emmc /dev/block/bootdevice/by-name/vbmeta_samsung 0
+[    0.001801][xF-A][6oo1]   25 /vbmeta_system  emmc /dev/block/bootdevice/by-name/vbmeta_system 0
+[    0.001830][xF-A][6oo1]   26 /tmp  ramdisk ramdisk 0
+[    0.001858][xF-A][6oo1] ro.boot.boot_devices=[soc/1d84000.ufshc]
+[    0.001885][xF-A][6oo1] Internal storage is UFS(soc/1d84000.ufshc)
+[    0.001913][xF-A][6oo1] fstab for /sdcard
+[    0.001940][xF-A][6oo1]   12 /sdcard  sdfat /dev/block/mmcblk1p1 0
+[    0.001969][xF-A][6oo1]
+[    0.001996][xF-A][6oo1]
+[    0.002024][xF-A][6oo1] [initialize init-recovery]
+[    0.002056][xF-A][6oo1] I:[libfs_mgr]superblock s_max_mnt_count:21,/dev/block/bootdevice/by-name/cache
+[    0.003784][xF-A][6oo1] I:[libfs_mgr]__mount(source=/dev/block/bootdevice/by-name/cache,target=/cache,type=ext4)=0: Success
+[    0.003812][xF-A][6oo1] I:[libfs_mgr]__mount return 0(source=cache,target=/cache,type=ext4,flags=0,options=): Success
+[    0.004157][xF-A][6oo1] libc: Unable to set property "ro.boottime.init.mount.cache" to "2": error code: 0x18, try count : 1
+[    0.004516][xF-A][6oo1] libc: Unable to set property "ro.boottime.init.mount.cache" to "2": error code: 0x18, try count : 2
+[    0.004829][xF-A][6oo1] libc: Unable to set property "ro.boottime.init.mount.cache" to "2": error code: 0x18, try count : 3
+[    0.004850][xF-A][6oo1] ls /cache/recovery/
+[    0.006440][xF-A][6oo1] -rw-r----- system   system     561420 2018-10-18 20:37 last_log.7
+[    0.006465][xF-A][6oo1] -rw------- system   system       5897 2018-03-08 04:58 last_history
+[    0.006475][xF-A][6oo1] -rw-rw---- system   system         23 2024-07-22 15:30 uncrypt_file
+[    0.006483][xF-A][6oo1] -rw------- system   system    1027732 2018-06-30 04:54 last_kmsg.5
+[    0.006492][xF-A][6oo1] -rw------- system   system    1025039 2018-11-29 05:47 last_kmsg.4
+[    0.006510][xF-A][6oo1] -rw-r----- system   system     804426 2018-06-30 04:54 last_log.5
+[    0.006519][xF-A][6oo1] -rw------- system   system    1037934 2018-02-18 14:21 last_kmsg.2
+[    0.006527][xF-A][6oo1] -rw-r----- system   system     492951 2018-01-01 00:00 last_dataresizing
+[    0.006535][xF-A][6oo1] -rw------- root     root           10 2018-03-08 05:05 last_locale
+[    0.006544][xF-A][6oo1] -rw------- system   system       5897 2018-03-08 04:58 last_all_history
+[    0.006552][xF-A][6oo1] -rw------- system   system        122 2023-12-31 16:00 command
+[    0.006561][xF-A][6oo1] -rw-r----- system   system     602831 2018-11-29 05:47 last_log.4
+[    0.006569][xF-A][6oo1] -rw-rw---- system   system     336632 2024-07-22 15:30 block.map
+[    0.006577][xF-A][6oo1] -rw------- system   system    1036213 2018-05-31 01:18 last_kmsg.10
+[    0.006585][xF-A][6oo1] -rw------- system   system    1034384 2018-12-31 14:25 last_kmsg.6
+[    0.006594][xF-A][6oo1] -rw------- system   system          0 2018-03-08 05:05 last_crash
+[    0.006601][xF-A][6oo1] -rw------- system   system       7213 2024-04-05 08:22 rescueparty_log
+[    0.006610][xF-A][6oo1] -rw-r----- system   system     762893 2018-03-08 05:05 last_log
+[    0.006650][xF-A][6oo1] -rw------- system   system    1033447 2018-06-25 22:15 last_kmsg.8
+[    0.006662][xF-A][6oo1] -rw------- system   system    1037502 2018-03-08 05:05 last_kmsg
+[    0.006671][xF-A][6oo1] -rw-r----- system   system     593077 2018-12-31 14:25 last_log.6
+[    0.006679][xF-A][6oo1] -rw-r----- system   system     646348 2018-06-25 22:15 last_log.8
+[    0.006687][xF-A][6oo1] -rw-r--r-- system   system      28427 2018-12-04 04:01 last_last_kernel
+[    0.006695][xF-A][6oo1] -rw------- system   system    1036574 2018-05-31 08:03 last_kmsg.9
+[    0.006704][xF-A][6oo1] -rw-r----- system   system     655025 2018-12-08 07:30 last_log.3
+[    0.006712][xF-A][6oo1] -rw-r----- system   system     641863 2018-05-31 08:03 last_log.9
+[    0.006720][xF-A][6oo1] -rw-r--r-- system   system    1811985 2018-03-08 05:05 last_recovery
+[    0.006728][xF-A][6oo1] -rw------- system   system    1035141 2018-10-18 20:37 last_kmsg.7
+[    0.006736][xF-A][6oo1] -rw-r----- system   system     499364 2018-01-01 00:00 last_postrecovery
+[    0.006745][xF-A][6oo1] -rw------- system   system         41 2018-03-08 05:05 last_extra_history
+[    0.006753][xF-A][6oo1] -rw-r--r-- system   system        479 2018-03-08 05:05 last_install
+[    0.006761][xF-A][6oo1] -rw-r----- system   system     569356 2018-05-31 01:18 last_log.10
+[    0.006769][xF-A][6oo1] -rw------- system   system          0 2018-03-08 05:05 last_extra_history_old
+[    0.006777][xF-A][6oo1] -rw------- system   system    1013676 2018-12-08 07:30 last_kmsg.3
+[    0.006785][xF-A][6oo1] -rw-r--r-- system   system       3738 2018-03-08 05:05 last_avc_msg_recovery
+[    0.006793][xF-A][6oo1] -rw-r--r-- system   system      35659 2018-03-08 05:05 last_kernel
+[    0.006801][xF-A][6oo1] -rw-r----- system   system     697974 2018-02-18 14:21 last_log.2
+[    0.006809][xF-A][6oo1] -rw-r----- system   system     514638 2018-01-25 14:37 last_log.1
+[    0.006817][xF-A][6oo1] -rw------- system   system    1034175 2018-01-25 14:37 last_kmsg.1
+[    0.006825][xF-A][6oo1]
+[    0.006833][xF-A][6oo1] ls /cache/fota/
+[    0.006843][xF-A][6oo1] -rw-rw---- system   system          3 2018-03-08 05:05 fota.status
+[    0.006851][xF-A][6oo1] -rw-rw---- system   system        971 2022-03-04 07:22 install_recovery.log
+[    0.006860][xF-A][6oo1]
+[    0.011395][xF-A][6oo1] exec /system/bin/e2fsck -v -y /dev/block/bootdevice/by-name/cache 
+[    0.021056][xF-A][6oo1] e2fsck 1.45.4 (23-Sep-2019)
+[    0.026343][xF-A][6oo1] skipping journal recovery because INCOMPAT_RECOVER was clear.
+[    0.026418][xF-A][6oo1] s_snapshot_r_blocks_count is 33. It might be upgraded from Q OS. Reinitialize it to 30
+[    0.026451][xF-A][6oo1] check whether gdt & bitmap free count is vaild
+[    0.026481][xF-A][6oo1] Pass 1: Checking inodes, blocks, and sizes
+[    0.028409][xF-A][6oo1] Pass 2: Checking directory structure
+[    0.034836][xF-A][6oo1] Pass 3: Checking directory connectivity
+[    0.034898][xF-A][6oo1] Pass 4: Checking reference counts
+[    0.034927][xF-A][6oo1] Pass 5: Checking group summary information
+[    0.037050][xF-A][6oo1]
+[    0.037094][xF-A][6oo1] cache: ***** FILE SYSTEM WAS MODIFIED *****
+[    0.037182][xF-A][6oo1]
+[    0.037215][xF-A][6oo1]           59 inodes used (0.23%, out of 25600)
+[    0.037277][xF-A][6oo1]            0 non-contiguous files (0.0%)
+[    0.037341][xF-A][6oo1]            0 non-contiguous directories (0.0%)
+[    0.037404][xF-A][6oo1]              # of inodes with ind/dind/tind blocks: 0/0/0
+[    0.037520][xF-A][6oo1]              Extent depth histogram: 51
+[    0.037588][xF-A][6oo1]         8084 blocks used (7.89%, out of 102400)
+[    0.037652][xF-A][6oo1]            0 bad blocks
+[    0.037715][xF-A][6oo1]            0 large files
+[    0.037778][xF-A][6oo1]
+[    0.037809][xF-A][6oo1]           42 regular files
+[    0.037869][xF-A][6oo1]            8 directories
+[    0.037931][xF-A][6oo1]            0 character device files
+[    0.037993][xF-A][6oo1]            0 block device files
+[    0.038055][xF-A][6oo1]            0 fifos
+[    0.038118][xF-A][6oo1]            0 links
+[    0.038206][xF-A][6oo1]            0 symbolic links (0 fast symbolic links)
+[    0.038269][xF-A][6oo1]            0 sockets
+[    0.038331][xF-A][6oo1] ------------
+[    0.038393][xF-A][6oo1]           50 files
+[    0.040270][xF-A][6oo1] done /system/bin/e2fsck -v -y /dev/block/bootdevice/by-name/cache , return value 1
+[    0.040374][xF-A][6oo1] Failed to e2fsck /cache partition.
+[    0.041329][xF-A][6oo1] I:[libfs_mgr]superblock s_max_mnt_count:21,/dev/block/bootdevice/by-name/cache
+[    0.044132][xF-A][6oo1] I:[libfs_mgr]__mount(source=/dev/block/bootdevice/by-name/cache,target=/cache,type=ext4)=0: Success
+[    0.044219][xF-A][6oo1] I:[libfs_mgr]__mount return 0(source=cache,target=/cache,type=ext4,flags=0,options=): Success
+[    0.044816][xF-A][6oo1] libc: Unable to set property "ro.boottime.init.mount.cache" to "2": error code: 0x18, try count : 1
+[    0.045281][xF-A][6oo1] libc: Unable to set property "ro.boottime.init.mount.cache" to "2": error code: 0x18, try count : 2
+[    0.045826][xF-A][6oo1] libc: Unable to set property "ro.boottime.init.mount.cache" to "2": error code: 0x18, try count : 3
+[    0.106280][xF-A][6oo1] ls /efs/
+[    0.106471][xF-A][6oo1] drwxrwx--- system   system            2020-03-24 18:03 prov
+[    0.106544][xF-A][6oo1] drwx------ system   system            2025-03-07 00:33 MALoUVKecjcX-Va1a6IpvdMg-5OSCbXfUSVwTiF6Qnc_
+[    0.106623][xF-A][6oo1] drwxrwxr-x system   system            2018-01-01 00:00 gatekeeper
+[    0.106692][xF-A][6oo1] drwxrwx--- audioserver audio             2020-03-24 17:41 tas25xx
+[    0.106759][xF-A][6oo1] drwxrwx--- radio    system            2018-01-01 00:00 prov_data
+[    0.106828][xF-A][6oo1] drwxrwxr-x system   system            2025-12-04 01:22 lpm
+[    0.106896][xF-A][6oo1] drwx------ system   system            2025-12-04 04:03 Rj5CXxvJ6Rn8F9GeLEebwOllvMZ9MYtdmQ7dhJxKFU0_
+[    0.106963][xF-A][6oo1] drwxrwx--- system   system            2018-01-01 00:00 biometrics
+[    0.107042][xF-A][6oo1] drwxrwxr-x system   system            2023-04-24 18:21 FactoryApp
+[    0.107178][xF-A][6oo1] drwxrw---- oem_5279 oem_5279          2023-02-04 23:20 pfw_data
+[    0.107255][xF-A][6oo1] drwxrwxr-- drm      system            2018-01-01 00:00 drm
+[    0.107347][xF-A][6oo1] -rw-rw---- root     system        256 2025-12-04 01:23 lpm_boot.log
+[    0.107423][xF-A][6oo1] drwx------ nfc      nfc               2018-01-01 00:00 nfc
+[    0.107498][xF-A][6oo1] drwxrwxr-x root     radio             2021-04-20 09:08 imei
+[    0.107566][xF-A][6oo1] drwx------ root     root              2008-12-31 15:00 lost+found
+[    0.107641][xF-A][6oo1] drwxrwx--- system   system            2022-05-17 01:09 taas
+[    0.107708][xF-A][6oo1] drwxrwxr-x radio    system            2025-12-04 01:23 sec_efs
+[    0.107765][xF-A][6oo1] drwxrwx--x radio    system            2018-07-22 04:37 recovery
+[    0.107846][xF-A][6oo1] drwxr-xr-x radio    system            2018-01-01 00:00 carrier
+[    0.107931][xF-A][6oo1] drwxrwx--x radio    system            2019-01-01 00:00 cpk
+[    0.107999][xF-A][6oo1] drwx------ system   system            2020-05-17 10:48 umc
+[    0.108066][xF-A][6oo1] drwxrwx--x radio    system            2020-02-24 12:38 usb_hw_param
+[    0.108134][xF-A][6oo1] -rw-r--r-- system   system        144 2020-03-24 18:03 wv.keys
+[    0.108201][xF-A][6oo1] drwx------ system   system            2020-05-18 13:21 sAN9OM+RvkCvnw0oyHXdPShA0ByA0CYSyLwb+bGD1hI_
+[    0.108277][xF-A][6oo1] d-wx--x--- dsms     dsms              2022-03-04 07:29 dsms
+[    0.108344][xF-A][6oo1] drwx------ system   system            2020-05-17 11:04 f3-kdcO7vtq3DPXQWveXFSLY--rOiMGsotFIfOjqlTI_
+[    0.108419][xF-A][6oo1] drwxrwxr-x radio    system            2023-04-15 16:31 Battery
+[    0.108495][xF-A][6oo1] drwxrwx--- system   system            2018-01-01 00:00 ssm
+[    0.108570][xF-A][6oo1] drwxr----- system   system            2022-11-14 15:17 pdp_bkup
+[    0.108654][xF-A][6oo1] drwx------ system   system            2020-01-15 01:54 UITpTFE9VnrKHR4z6h+7PeRVyWmMyMdE+iTpANhtP3M_
+[    0.108738][xF-A][6oo1] drwxrwx--- system   log               2018-12-31 14:26 knoxai
+[    0.108796][xF-A][6oo1]
+[    0.108840][xF-A][6oo1] ls /efs/MDM/
+[    0.108892][xF-A][6oo1] can`t access '/efs/MDM/' - No such file or directory
+[    0.113448][xF-A][6oo1]
+[    0.113511][xF-A][6oo1] [init-history]
+[    0.113687][xF-A][6oo1] df /efs
+[    0.113760][xF-A][6oo1] Filesystem               Size         Used         Free       Blksize
+[    0.113955][xF-A][6oo1] /efs                    15.7M(16424960)    1.4M(1462272)   14.3M(14962688) 4096
+[    0.113974][xF-A][6oo1]
+[    0.114054][xF-A][6oo1]
+[    0.114098][xF-A][6oo1] [collecting command]
+[    0.114249][xF-A][6oo1] read /sys/class/sec/sec_key/keycode_pressed = 115:0,116:0,114:0
+[    0.114269][xF-A][6oo1]
+[    0.114313][xF-A][6oo1] E:isManualModeByKeyPress: KEY_VOLUMEUP(0)
+[    0.114359][xF-A][6oo1] E:isManualModeByKeyPress: KEY_POWER(0)
+[    0.114404][xF-A][6oo1] E:isManualModeByKeyPress: KEY_VOLUMEDOWN(0)
+[    0.114450][xF-A][6oo1] E:isManualModeByKeyPress: 0, 0, 0, -1, -1, -1, -1
+[    0.114496][xF-A][6oo1] E:isManualModeByKeyPress: ManualKeyPress(0)
+[    0.114563][xF-A][6oo1] I:main :: Check recovery command!!
+[    0.115388][xF-A][6oo1] I:Boot command: boot-recovery
+[    0.116132][xF-A][6oo1] I:[libfs_mgr]superblock s_max_mnt_count:21,/dev/block/bootdevice/by-name/cache
+[    0.118088][xF-A][6oo1] I:[libfs_mgr]__mount(source=/dev/block/bootdevice/by-name/cache,target=/cache,type=ext4)=0: Success
+[    0.118152][xF-A][6oo1] I:[libfs_mgr]__mount return 0(source=cache,target=/cache,type=ext4,flags=0,options=): Success
+[    0.118693][xF-A][6oo1] libc: Unable to set property "ro.boottime.init.mount.cache" to "2": error code: 0x18, try count : 1
+[    0.119058][xF-A][6oo1] libc: Unable to set property "ro.boottime.init.mount.cache" to "2": error code: 0x18, try count : 2
+[    0.119394][xF-A][6oo1] libc: Unable to set property "ro.boottime.init.mount.cache" to "2": error code: 0x18, try count : 3
+[    0.120689][xF-A][6oo1] I:Got 5 arguments from /cache/recovery/command
+[    0.122200][xF-A][6oo1] save_header(), prefix : xF
+[    0.122604][xF-A][6oo1] copy_file '/efs/recovery/history' '/cache/recovery/last_all_history'
+[    0.125072][xF-A][6oo1] copy_history() : history size=6064
+[    0.125124][xF-A][6oo1] copy_file '/cache/recovery/last_all_history' '/cache/recovery/last_history'
+[    0.126815][xF-A][6oo1] /proc/reset_reason : NP
+[    0.126913][xF-A][6oo1] /proc/pwrsrc : OFFSRC:(PS_HOLD,SOFT) / ONSRC:(HARDRST,PON1)
+[    0.126998][xF-A][6oo1] /proc/store_lastkmsg : 0
+[    0.127067][xF-A][6oo1] locale is [zh-Hant-TW]
+[    0.127427][xF-A][6oo1] Loading make_device from librecovery_ui_ext.so
+[    0.136523][xF-A][6oo1] I:Brightness file: /sys/class/backlight/panel0-backlight/brightness
+[    0.136604][xF-A][6oo1] I:Max brightness file: /sys/class/backlight/panel0-backlight/max_brightness
+[    0.136709][xF-A][6oo1] I:Brightness: 120 (50%), max: 425
+[    0.136777][xF-A][6oo1] I:Set brightness to 0
+[    0.146128][xF-A][6oo1] Atomic Commit failed in DisableNonMainCrtcs
+[    0.146377][xF-A][6oo1] number of lms in topology 1
+[    0.172160][xF-A][6oo1] Atomic Commit failed, rc = 0
+[    0.203734][xF-A][6oo1] I:Set brightness to 120
+[    0.211171][xF-A][6oo1] dpi : xxhdpi
+[    0.211242][xF-A][6oo1] px2pt = 3
+[    0.215731][xF-A][6oo1]           erasing_text: zh (488 x 59 @ 4033)
+[    0.219321][xF-A][6oo1]        no_command_text: zh (560 x 59 @ 3924)
+[    0.222181][xF-A][6oo1]             error_text: zh (472 x 59 @ 3924)
+[    0.225791][xF-A][6oo1]   cancel_wipe_data_text: zh (315 x 59 @ 3815)
+[    0.230655][xF-A][6oo1]   factory_data_reset_text: zh (816 x 59 @ 4082)
+[    0.233794][xF-A][6oo1]         try_again_text: zh (457 x 59 @ 3875)
+[    0.245090][xF-A][6oo1]   wipe_data_confirmation_text: zh (1049 x 118 @ 8140)
+[    0.245441][xF-A][6oo1] W:Failed to load bitmap wipe_data_menu_header_text for locale zh-Hant-TW (error -1). Falling back to use default locale.
+[    0.245551][xF-A][6oo1] E:Failed to load bitmap wipe_data_menu_header_text for locale en-US (error -1)
+[    0.264355][xF-A][6oo1]   wipe_data_sdcard_warning_text: zh (1070 x 118 @ 11702)
+[    0.264749][xF-A][6oo1] E:Failed to load bitmap lcd_fw_update (error -1)
+[    0.264863][xF-A][6oo1] intro_frames 0
+[    0.264911][xF-A][6oo1] loop_frames 60
+[    0.312152][xF-A][6oo1] Reboot Recovery Cause file exist
+[    0.312226][xF-A][6oo1] read_reboot_recovery_cause_file++
+[    0.314644][xF-A][6oo1] read_reboot_recovery_cause_file: read string rst [65]
+[    0.314706][xF-A][6oo1] read_reboot_recovery_cause_file(65)--
+[    0.314755][xF-A][6oo1]
+[    0.314773][xF-A][6oo1] #Reboot Recovery Cause is [Reboot:7912 RecoverySystemMasterClearConfirm,2024-01-01T00:00:01Z]#
+[    0.319449][xF-A][6oo1]
+[    0.319502][xF-A][6oo1] [reboot-reason-history]
+[    0.319550][xF-A][6oo1] save_recovery_cause() : reboot_reason=Reboot:7912 RecoverySystemMasterClearConfirm,2024-01-01T00:00:01Z
+[    0.319635][xF-A][6oo1] copy_file '/efs/recovery/history' '/cache/recovery/last_all_history'
+[    0.332506][xF-A][6oo1] copy_history() : history size=6194
+[    0.332556][xF-A][6oo1] copy_file '/cache/recovery/last_all_history' '/cache/recovery/last_history'
+[    0.334284][xF-A][6oo1] the deivce does not have a fastbootd token, so don't allow fastbootd
+[    0.334337][xF-A][6oo1] check the MDM policy. retry(1)
+[    0.334496][xF-A][6oo1] I:/efs is already mounted
+[    0.334544][xF-A][6oo1] check_MDM_policy: /efs is mounted normally
+[    0.334609][xF-A][6oo1] check_MDM_policy: /efs/MDM/FactoryReset does not exist. MDM allows factoryReset (No such file or directory)
+[    0.334867][xF-A][6oo1] W:[libfs_mgr]Failed to umount /efs: Device or resource busy
+[    0.334919][xF-A][6oo1] check_MDM_policy: can't unmount /efs (Device or resource busy)
+[    0.334964][xF-A][6oo1] check_MDM_policy: ret 1
+[    0.354433][xF-A][6oo1] I:Starting recovery (pid 469) on Sun Jul 22 04:37:51 2018
+[    0.354457][xF-A][6oo1]
+[    0.354500][xF-A][6oo1] I:locale is [zh-Hant-TW]
+[    0.357330][xF-A][6oo1] SELinux: Loaded file_contexts
+[    0.357569][xF-A][6oo1] main(): usb_config(none), usb_state(none)
+[    0.357678][xF-A][6oo1] recovery: option `--requested_time' doesn't allow an argument
+[    0.357740][xF-A][6oo1] E:Invalid command argument
+[    0.371165][xF-A][6oo1] ro.boot.boot_recovery=1 
+[    0.371246][xF-A][6oo1] rtn_config value is empty.
+[    0.371293][xF-A][6oo1] stage is []
+[    0.371341][xF-A][6oo1] #Reason is [MasterClearConfirm,2024-01-01T00:00:01Z]#
+[    0.387895][xF-A][6oo1] requested_time is [(null)]
+[    0.388090][xF-A][6oo1] I:/efs is already mounted
+[    0.390756][xF-A][6oo1] W:[libfs_mgr]Failed to umount /efs: Device or resource busy
+[    0.390809][xF-A][6oo1] can't unmount /efs - Device or resource busy
+[    0.391019][xF-A][6oo1]
+[    0.391065][xF-A][6oo1] [read csc code]
+[    0.391112][xF-A][6oo1] read csc code = 'BRI'
+[    0.396515][xF-A][6oo1]        installing_text: zh (1052 x 59 @ 3973)
+[    0.421492][xF-A][6oo1] kernel_version : Linux version 4.14.190-27200287-abA715FZHSADXB1 (dpi@21DK7B24) (clang version 10.0.7 for Android NDK, GNU ld (binutils-2.27-bd24d23f) 2.27.0.20170315) #1 SMP PREEMPT Thu Feb 29 17:50:05 KST 2024
+[    0.421542][xF-A][6oo1]
+[    0.421743][xF-A][6oo1] Command: "/system/bin/recovery" "--wipe_data" "--requested_time=2025/12/05 23:44:23.656" "--reason=MasterClearConfirm,2024-01-01T00:00:01Z" "--locale=zh-Hant-TW"
+[    0.421789][xF-A][6oo1]
+[    0.421834][xF-A][6oo1] update_package = (null)
+[    0.421879][xF-A][6oo1] should_wipe_data = 1, should_wipe_cache = 0,should_wipe_carrier = 0
+[    0.421923][xF-A][6oo1] data_resizing = 0
+[    0.421967][xF-A][6oo1] carry_out = (null)
+[    0.422010][xF-A][6oo1] just_exit = 0
+[    0.422055][xF-A][6oo1] delete_apn_changes = 0
+[    0.422099][xF-A][6oo1] should_prompt_and_wipe_data = 0
+[    0.422142][xF-A][6oo1] should_prompt_and_wipe_app_data = 0
+[    0.422187][xF-A][6oo1] rescue = 0
+[    0.422232][xF-A][6oo1] display_firmware_update = 0
+[    0.422276][xF-A][6oo1]
+[    0.422319][xF-A][6oo1]
+[    0.422362][xF-A][6oo1] [property list]
+[    0.423104][xF-A][6oo1] ro.config.knox=v30
+[    0.423152][xF-A][6oo1] ro.config.knox.ucm=1
+[    0.423198][xF-A][6oo1] ro.config.tima=1
+[    0.423243][xF-A][6oo1] ro.config.dmverity=G
+[    0.423289][xF-A][6oo1] ro.config.ifaaversion=2
+[    0.423334][xF-A][6oo1] ro.config.timaversion=3.0
+[    0.423379][xF-A][6oo1] ro.config.iccc_version=3.0
+[    0.423424][xF-A][6oo1] ro.config.timaversion_info=Knox3.4_S.R.R
+[    0.423469][xF-A][6oo1] ro.config.rm_preload_enabled=1
+[    0.424064][xF-A][6oo1] dalvik.vm.minidebuginfo=true
+[    0.424112][xF-A][6oo1] dalvik.vm.dex2oat-minidebuginfo=true
+[    0.424158][xF-A][6oo1] dalvik.vm.dex2oat-max-image-block-size=524288
+[    0.424204][xF-A][6oo1] dalvik.vm.dex2oat-resolve-startup-strings=true
+[    0.424250][xF-A][6oo1] dalvik.vm.dex2oat-updatable-bcp-packages-file=/system/etc/updatable-bcp-packages.txt
+[    0.424353][xF-A][6oo1] ro.boot.debug_level=0x4f4c
+[    0.424401][xF-A][6oo1] debug.sf.hw=0
+[    0.424447][xF-A][6oo1] debug.sf.disable_backpressure=1
+[    0.424493][xF-A][6oo1] debug.sf.early_phase_offset_ns=100000
+[    0.424539][xF-A][6oo1] debug.sf.enable_gl_backpressure=1
+[    0.424584][xF-A][6oo1] debug.sf.early_gl_phase_offset_ns=100000
+[    0.424630][xF-A][6oo1] debug.sf.early_app_phase_offset_ns=100000
+[    0.424676][xF-A][6oo1] debug.sf.early_gl_app_phase_offset_ns=100000
+[    0.424722][xF-A][6oo1] debug.sf.high_fps_early_phase_offset_ns=100000
+[    0.424768][xF-A][6oo1] debug.sf.high_fps_late_sf_phase_offset_ns=100000
+[    0.424813][xF-A][6oo1] debug.sf.high_fps_early_gl_phase_offset_ns=100000
+[    0.424859][xF-A][6oo1] debug.sf.high_fps_late_app_phase_offset_ns=100000
+[    0.424905][xF-A][6oo1] debug.egl.hw=0
+[    0.424951][xF-A][6oo1] debug.atrace.tags.enableflags=0
+[    0.424997][xF-A][6oo1] debug.mdpcomp.logs=0
+[    0.425042][xF-A][6oo1] debug.stagefright.ccodec=1
+[    0.425088][xF-A][6oo1] debug.stagefright.omx_default_rank=0
+[    0.425134][xF-A][6oo1] persist.log.level=0xFFFFFFFF
+[    0.425178][xF-A][6oo1] persist.log.semlevel=0xFFFFFF00
+[    0.425303][xF-A][6oo1] ro.opa.eligible_device=true
+[    0.425350][xF-A][6oo1] ro.soc.model=SM7150
+[    0.425395][xF-A][6oo1] ro.soc.manufacturer=QTI
+[    0.425441][xF-A][6oo1] ro.smps.enable=false
+[    0.425487][xF-A][6oo1] ro.wifi.channels=
+[    0.425568][xF-A][6oo1] ro.allow.mock.location=0
+[    0.425615][xF-A][6oo1] ro.build.keys=test-keys
+[    0.425660][xF-A][6oo1] ro.build.flavor=a71zh-user
+[    0.425707][xF-A][6oo1] ro.build.selinux=1
+[    0.425752][xF-A][6oo1] ro.build.selinux.enforce=1
+[    0.425798][xF-A][6oo1] ro.build.version.sem=3001
+[    0.425843][xF-A][6oo1] ro.build.version.sep=120100
+[    0.425888][xF-A][6oo1] ro.build.version.all_codenames=REL
+[    0.425932][xF-A][6oo1] ro.build.version.security_index=1
+[    0.425980][xF-A][6oo1] ro.build.version.preview_sdk_fingerprint=REL
+[    0.426025][xF-A][6oo1] ro.build.version.min_supported_target_sdk=23
+[    0.426069][xF-A][6oo1] ro.build.2ndbrand=false
+[    0.426114][xF-A][6oo1] ro.build.official.release=true
+[    0.426158][xF-A][6oo1] ro.build.changelist=27200287
+[    0.426213][xF-A][6oo1] ro.build.display_build_number=true
+[    0.426258][xF-A][6oo1] ro.iorapd.enable=false
+[    0.426304][xF-A][6oo1] ro.system.qb.id=77797327
+[    0.426349][xF-A][6oo1] ro.system.build.id=RP1A.200720.012
+[    0.426394][xF-A][6oo1] ro.system.build.date=Thu Feb 29 17:38:58 KST 2024
+[    0.426439][xF-A][6oo1] ro.system.build.date.utc=1709195938
+[    0.426484][xF-A][6oo1] ro.system.build.tags=release-keys
+[    0.426530][xF-A][6oo1] ro.system.build.type=user
+[    0.426575][xF-A][6oo1] ro.system.build.version.sdk=30
+[    0.426620][xF-A][6oo1] ro.system.build.version.sehi=3003
+[    0.426665][xF-A][6oo1] ro.system.build.version.release=11
+[    0.426710][xF-A][6oo1] ro.system.build.version.incremental=A715FZHSADXB1
+[    0.426755][xF-A][6oo1] ro.system.build.version.release_or_codename=11
+[    0.426799][xF-A][6oo1] ro.system.build.fingerprint=samsung/a71zh/a71:11/RP1A.200720.012/A715FZHSADXB1:user/release-keys
+[    0.426844][xF-A][6oo1] ro.treble.enabled=true
+[    0.426890][xF-A][6oo1] ro.product.build.id=RP1A.200720.012
+[    0.426936][xF-A][6oo1] ro.product.build.date=Thu Feb 29 17:38:58 KST 2024
+[    0.426981][xF-A][6oo1] ro.product.build.date.utc=1709195938
+[    0.427026][xF-A][6oo1] ro.product.build.tags=release-keys
+[    0.427071][xF-A][6oo1] ro.product.build.version.sdk=30
+[    0.427116][xF-A][6oo1] ro.product.build.version.release=11
+[    0.427162][xF-A][6oo1] ro.product.build.version.incremental=A715FZHSADXB1
+[    0.427206][xF-A][6oo1] ro.product.build.version.release_or_codename=11
+[    0.427251][xF-A][6oo1] ro.product.build.fingerprint=samsung/a71zh/a71:11/RP1A.200720.012/A715FZHSADXB1:user/release-keys
+[    0.427296][xF-A][6oo1] ro.product.locale=en-GB
+[    0.427341][xF-A][6oo1] ro.product.product.name=a71zh
+[    0.427385][xF-A][6oo1] ro.product.product.brand=samsung
+[    0.427429][xF-A][6oo1] ro.product.product.model=SM-A715F
+[    0.427474][xF-A][6oo1] ro.product.product.device=a71
+[    0.427518][xF-A][6oo1] ro.product.product.manufacturer=samsung
+[    0.427564][xF-A][6oo1] ro.product.system_ext.name=a71zh
+[    0.427609][xF-A][6oo1] ro.product.system_ext.brand=samsung
+[    0.427654][xF-A][6oo1] ro.product.system_ext.model=SM-A715F
+[    0.427700][xF-A][6oo1] ro.product.system_ext.device=a71
+[    0.427745][xF-A][6oo1] ro.product.system_ext.manufacturer=samsung
+[    0.427791][xF-A][6oo1] ro.system_ext.build.id=RP1A.200720.012
+[    0.427836][xF-A][6oo1] ro.system_ext.build.date=Thu Feb 29 17:38:58 KST 2024
+[    0.427881][xF-A][6oo1] ro.system_ext.build.date.utc=1709195938
+[    0.427926][xF-A][6oo1] ro.system_ext.build.tags=release-keys
+[    0.427971][xF-A][6oo1] ro.system_ext.build.type=user
+[    0.428016][xF-A][6oo1] ro.system_ext.build.version.sdk=30
+[    0.428061][xF-A][6oo1] ro.system_ext.build.version.release=11
+[    0.428106][xF-A][6oo1] ro.system_ext.build.version.incremental=A715FZHSADXB1
+[    0.428151][xF-A][6oo1] ro.system_ext.build.version.release_or_codename=11
+[    0.428197][xF-A][6oo1] ro.system_ext.build.fingerprint=samsung/a71zh/a71:11/RP1A.200720.012/A715FZHSADXB1:user/release-keys
+[    0.428244][xF-A][6oo1] ro.user_trial=FALSE
+[    0.428290][xF-A][6oo1] ro.postinstall.fstab.prefix=/system
+[    0.428335][xF-A][6oo1] ro.actionable_compatible_property.enabled=true
+[    0.428381][xF-A][6oo1] com.samsung.speg.disable=true
+[    0.428427][xF-A][6oo1] init.svc.dsmsd=running
+[    0.428472][xF-A][6oo1] init.svc.ueventd=running
+[    0.428516][xF-A][6oo1] init.svc.recovery=running
+[    0.428561][xF-A][6oo1] media.settings.xml=/vendor/etc/media_profiles_vendor.xml
+[    0.428606][xF-A][6oo1] persist.demo.hdmirotationlock=false
+[    0.428650][xF-A][6oo1] persist.backup.ntpServer=0.pool.ntp.org
+[    0.428695][xF-A][6oo1] restore.feature.use_samsung_smart_switch_flow=1
+[    0.429230][xF-A][6oo1] ro.config.ringtone=Over_the_Horizon.ogg
+[    0.429278][xF-A][6oo1] ro.config.ringtone_2=Atomic_Bell.ogg
+[    0.429325][xF-A][6oo1] ro.config.alarm_alert=Homecoming.ogg
+[    0.429372][xF-A][6oo1] ro.config.media_sound=Media_preview_Touch_the_light.ogg
+[    0.429418][xF-A][6oo1] ro.config.notification_sound=Spaceline.ogg
+[    0.429473][xF-A][6oo1] ro.config.notification_sound_2=Signal.ogg
+[    0.429521][xF-A][6oo1] ro.boot.em.model=SM-A715F
+[    0.429567][xF-A][6oo1] ro.boot.em.status=0x0
+[    0.429612][xF-A][6oo1] ro.boot.em.rdx_dump=false
+[    0.429658][xF-A][6oo1] ro.boot.im.param.offset=11534384
+[    0.429703][xF-A][6oo1] ro.boot.me.param.offset=11534464
+[    0.429748][xF-A][6oo1] ro.boot.pr.param.offset=11534624
+[    0.429794][xF-A][6oo1] ro.boot.rp=10
+[    0.429838][xF-A][6oo1] ro.boot.sb.debug0=0x0
+[    0.429883][xF-A][6oo1] ro.boot.sn.param.offset=11534544
+[    0.429928][xF-A][6oo1] ro.boot.sku.param.offset=11534704
+[    0.429973][xF-A][6oo1] ro.boot.svb.ver=SVB1.0
+[    0.430019][xF-A][6oo1] ro.boot.usrf=11535344
+[    0.430064][xF-A][6oo1] ro.boot.flash.locked=1
+[    0.430110][xF-A][6oo1] ro.boot.memcg=1
+[    0.430156][xF-A][6oo1] ro.boot.sales.param.offset=11534800
+[    0.430200][xF-A][6oo1] ro.boot.ulcnt=0
+[    0.430245][xF-A][6oo1] ro.boot.vbmeta.size=17472
+[    0.430289][xF-A][6oo1] ro.boot.vbmeta.digest=06d3a90dcdecf1495e1f6b8ff467271b4f41e6f477eda86e3c40d6394e6c827a
+[    0.430334][xF-A][6oo1] ro.boot.vbmeta.hash_alg=sha256
+[    0.430379][xF-A][6oo1] ro.boot.vbmeta.avb_version=1.0
+[    0.430422][xF-A][6oo1] ro.boot.vbmeta.device_state=locked
+[    0.430467][xF-A][6oo1] ro.boot.vbmeta.invalidate_on_error=yes
+[    0.430512][xF-A][6oo1] ro.boot.dtb_idx=0
+[    0.430557][xF-A][6oo1] ro.boot.phandle=
+[    0.430601][xF-A][6oo1] ro.boot.product.model=SM-A715F
+[    0.430646][xF-A][6oo1] ro.boot.sec_atd.tty=/dev/ttyHS8
+[    0.430691][xF-A][6oo1] ro.boot.baseband=msm
+[    0.430735][xF-A][6oo1] ro.boot.dtbo_idx=0
+[    0.430779][xF-A][6oo1] ro.boot.hardware=qcom
+[    0.430824][xF-A][6oo1] ro.boot.hardware.sku=hcesimese
+[    0.430868][xF-A][6oo1] ro.boot.revision=6
+[    0.430912][xF-A][6oo1] ro.boot.ucs_mode=0
+[    0.430956][xF-A][6oo1] ro.boot.carrierid=BRI
+[    0.431000][xF-A][6oo1] ro.boot.carrierid.param.offset=11534796
+[    0.431045][xF-A][6oo1] ro.boot.fastbootd=false
+[    0.431089][xF-A][6oo1] ro.boot.keymaster=1
+[    0.431133][xF-A][6oo1] ro.boot.prototype.param.offset=11534812
+[    0.431179][xF-A][6oo1] ro.boot.bootdevice=1d84000.ufshc
+[    0.431224][xF-A][6oo1] ro.boot.bootloader=A715FZHSADXB1
+[    0.431270][xF-A][6oo1] ro.boot.sales_code=BRI
+[    0.431315][xF-A][6oo1] ro.boot.swp_config=0
+[    0.431360][xF-A][6oo1] ro.boot.veritymode=enforcing
+[    0.431406][xF-A][6oo1] ro.boot.avb_version=1.1
+[    0.431451][xF-A][6oo1] ro.boot.boot_devices=soc/1d84000.ufshc
+[    0.431497][xF-A][6oo1] ro.boot.warranty_bit=0
+[    0.431542][xF-A][6oo1] ro.boot.boot_recovery=1
+[    0.431589][xF-A][6oo1] ro.boot.security_mode=1526595585
+[    0.431633][xF-A][6oo1] ro.boot.upload_offset=11535348
+[    0.431678][xF-A][6oo1] ro.boot.usbcontroller=a600000.dwc3
+[    0.431723][xF-A][6oo1] ro.boot.cp_debug_level=0x55FF
+[    0.431767][xF-A][6oo1] ro.boot.verifiedbootstate=green
+[    0.431811][xF-A][6oo1] ro.boot.reserve_mem_region=0x0
+[    0.431857][xF-A][6oo1] ro.build.id=RP1A.200720.012
+[    0.431903][xF-A][6oo1] ro.build.date=Thu Feb 29 17:38:58 KST 2024
+[    0.431950][xF-A][6oo1] ro.build.date.utc=1709195938
+[    0.431996][xF-A][6oo1] ro.build.host=21DK7B24
+[    0.432042][xF-A][6oo1] ro.build.tags=release-keys
+[    0.432088][xF-A][6oo1] ro.build.type=user
+[    0.432134][xF-A][6oo1] ro.build.user=dpi
+[    0.432180][xF-A][6oo1] ro.build.display.id=RP1A.200720.012.A715FZHSADXB1
+[    0.432225][xF-A][6oo1] ro.build.product=a71
+[    0.432270][xF-A][6oo1] ro.build.version.sdk=30
+[    0.432315][xF-A][6oo1] ro.build.version.base_os=
+[    0.432360][xF-A][6oo1] ro.build.version.release=11
+[    0.432405][xF-A][6oo1] ro.build.version.codename=REL
+[    0.432450][xF-A][6oo1] ro.build.version.incremental=A715FZHSADXB1
+[    0.432495][xF-A][6oo1] ro.build.version.preview_sdk=0
+[    0.432541][xF-A][6oo1] ro.build.version.security_patch=2024-02-01
+[    0.432586][xF-A][6oo1] ro.build.version.release_or_codename=11
+[    0.432631][xF-A][6oo1] ro.build.description=a71zh-user 11 RP1A.200720.012 A715FZHSADXB1 release-keys
+[    0.432677][xF-A][6oo1] ro.build.characteristics=nosdcard
+[    0.432730][xF-A][6oo1] ro.product.cpu.abi=arm64-v8a
+[    0.432776][xF-A][6oo1] ro.product.cpu.abilist=arm64-v8a,armeabi-v7a,armeabi
+[    0.432822][xF-A][6oo1] ro.product.name=a71zh
+[    0.432867][xF-A][6oo1] ro.product.brand=samsung
+[    0.432913][xF-A][6oo1] ro.product.build.type=user
+[    0.432958][xF-A][6oo1] ro.product.model=SM-A715F
+[    0.433003][xF-A][6oo1] ro.product.device=a71
+[    0.433048][xF-A][6oo1] ro.product.system.brand=samsung
+[    0.433093][xF-A][6oo1] ro.product.manufacturer=samsung
+[    0.433138][xF-A][6oo1] ro.baseband=msm
+[    0.433183][xF-A][6oo1] ro.bootmode=unknown
+[    0.433229][xF-A][6oo1] ro.hardware=qcom
+[    0.433275][xF-A][6oo1] ro.revision=6
+[    0.433320][xF-A][6oo1] ro.bootloader=A715FZHSADXB1
+[    0.433365][xF-A][6oo1] ro.debuggable=0
+[    0.433411][xF-A][6oo1] ro.property_service.version=2
+[    0.433515][xF-A][6oo1] sys.usb.controller=a600000.dwc3
+[    0.433561][xF-A][6oo1] persist.sys.sf.color_saturation=1.0
+[    0.433606][xF-A][6oo1] persist.sys.dalvik.vm.lib.2=libart.so
+[    0.433692][xF-A][6oo1] ro.crypto.volume.filenames_mode=aes-256-cts
+[    0.433740][xF-A][6oo1] af.fast_track_multiplier=1
+[    0.433785][xF-A][6oo1] ro.af.client_heap_size_kbyte=7168
+[    0.433831][xF-A][6oo1] ro.sf.lcd_density=420
+[    0.433876][xF-A][6oo1] ro.com.google.gmsversion=11_202106
+[    0.433923][xF-A][6oo1] ro.gfx.driver.1=com.qualcomm.qti.gpudrivers.sm6150.api30
+[    0.433969][xF-A][6oo1] ro.minui.pixel_format=RGBX_8888
+[    0.434015][xF-A][6oo1] ro.radio.noril=no
+[    0.434060][xF-A][6oo1] ro.camera.notify_nfc=1
+[    0.434106][xF-A][6oo1] ro.zygote=zygote64_32
+[    0.434152][xF-A][6oo1] ro.opengles.version=196610
+[    0.434198][xF-A][6oo1] ro.telephony.default_cdma_sub=0
+[    0.434243][xF-A][6oo1] ro.oem_unlock_supported=1
+[    0.434288][xF-A][6oo1] ro.control_privapp_permissions=enforce
+[    0.434334][xF-A][6oo1] drm.service.enabled=true
+[    0.434379][xF-A][6oo1] audio.offload.min.duration.secs=30
+[    0.434424][xF-A][6oo1] camera.disable_zsl_mode=1
+[    0.434469][xF-A][6oo1] keyguard.no_require_sim=true
+[    0.434686][xF-A][6oo1] ro.slmk.2nd.dha_pwhl_key=512
+[    0.434737][xF-A][6oo1] ro.slmk.2nd.freelimit_val=12
+[    0.434781][xF-A][6oo1] ro.slmk.2nd.dha_cached_max=24
+[    0.434827][xF-A][6oo1] ro.slmk.beks_key=33
+[    0.434873][xF-A][6oo1] ro.slmk.fha_enable=true
+[    0.434918][xF-A][6oo1] ro.slmk.beks_enable=true
+[    0.434965][xF-A][6oo1] ro.slmk.dha_pwhl_key=0
+[    0.435012][xF-A][6oo1] ro.slmk.dha_empty_max=20
+[    0.435057][xF-A][6oo1] ro.slmk.dha_empty_min=6
+[    0.435103][xF-A][6oo1] ro.slmk.freelimit_val=14
+[    0.435148][xF-A][6oo1] ro.slmk.dha_cached_max=18
+[    0.435193][xF-A][6oo1] ro.slmk.dha_cached_min=3
+[    0.435239][xF-A][6oo1] ro.slmk.custom_sw_limit=225
+[    0.435285][xF-A][6oo1] ro.slmk.kill_timeout_ms=1000
+[    0.435330][xF-A][6oo1] ro.slmk.dha_2ndprop_thMB=6144
+[    0.435376][xF-A][6oo1] ro.slmk.upgrade_pressure=35
+[    0.435422][xF-A][6oo1] ro.slmk.use_camera_boost=true
+[    0.435468][xF-A][6oo1] ro.slmk.enable_reentry_lmk=false
+[    0.435530][xF-A][6oo1] ro.slmk.kill_heaviest_task=true
+[    0.435576][xF-A][6oo1] ro.slmk.chimera_strategy_6gb=1434,19,10,2034
+[    0.435622][xF-A][6oo1] ro.slmk.chimera_strategy_8gb=1650,24,10,2550
+[    0.435666][xF-A][6oo1] ro.slmk.enable_userspace_lmk=true
+[    0.435710][xF-A][6oo1] ro.slmk.chimera_kill_boost_on_heavy=true
+[    0.435755][xF-A][6oo1] ro.config.pageboost.vramdisk.bootfile.enabled=true
+[    0.435801][xF-A][6oo1] ro.config.pageboost.vramdisk.minimize=true
+[    0.435846][xF-A][6oo1] ro.config.vc_call_vol_steps=8
+[    0.435934][xF-A][6oo1] ro.dalvik.vm.native.bridge=0
+[    0.435983][xF-A][6oo1] dalvik.vm.isa.arm.variant=cortex-a9
+[    0.436031][xF-A][6oo1] dalvik.vm.isa.arm.features=default
+[    0.436078][xF-A][6oo1] dalvik.vm.isa.arm64.variant=generic
+[    0.436127][xF-A][6oo1] dalvik.vm.isa.arm64.features=default
+[    0.436174][xF-A][6oo1] dalvik.vm.dexopt.secondary=true
+[    0.436222][xF-A][6oo1] dalvik.vm.usejit=true
+[    0.436268][xF-A][6oo1] dalvik.vm.heapsize=512m
+[    0.436314][xF-A][6oo1] dalvik.vm.lockprof.threshold=500
+[    0.436369][xF-A][6oo1] dalvik.vm.dex2oat-Xms=64m
+[    0.436416][xF-A][6oo1] dalvik.vm.dex2oat-Xmx=512m
+[    0.436463][xF-A][6oo1] dalvik.vm.heapmaxfree=8m
+[    0.436509][xF-A][6oo1] dalvik.vm.heapminfree=512k
+[    0.436555][xF-A][6oo1] dalvik.vm.heapstartsize=8m
+[    0.436602][xF-A][6oo1] dalvik.vm.appimageformat=lz4
+[    0.436649][xF-A][6oo1] dalvik.vm.usejitprofiles=true
+[    0.436697][xF-A][6oo1] dalvik.vm.image-dex2oat-Xms=64m
+[    0.436743][xF-A][6oo1] dalvik.vm.image-dex2oat-Xmx=64m
+[    0.436791][xF-A][6oo1] dalvik.vm.heaptargetutilization=0.75
+[    0.436840][xF-A][6oo1] ro.frp.pst=/dev/block/persistent
+[    0.436889][xF-A][6oo1] ro.odm.build.date=Thu Feb 29 17:38:58 KST 2024
+[    0.436937][xF-A][6oo1] ro.odm.build.date.utc=1709195938
+[    0.436984][xF-A][6oo1] ro.odm.build.version.incremental=A715FZHSADXB1
+[    0.437033][xF-A][6oo1] ro.odm.build.fingerprint=samsung/a71zh/a71:11/RP1A.200720.012/A715FZHSADXB1:user/release-keys
+[    0.437082][xF-A][6oo1] ro.apex.updatable=true
+[    0.437127][xF-A][6oo1] ro.boot.fstab_suffix=default
+[    0.437174][xF-A][6oo1] ro.boot.dynamic_partitions=true
+[    0.437222][xF-A][6oo1] ro.hwui.use_vulkan=
+[    0.437269][xF-A][6oo1] ro.board.platform=sm6150
+[    0.437316][xF-A][6oo1] ro.kernel.qemu=0
+[    0.437363][xF-A][6oo1] ro.vendor.build.date=Thu Feb 29 17:38:58 KST 2024
+[    0.437409][xF-A][6oo1] ro.vendor.build.date.utc=1709195938
+[    0.437456][xF-A][6oo1] ro.vendor.build.version.incremental=A715FZHSADXB1
+[    0.437504][xF-A][6oo1] ro.vendor.build.fingerprint=samsung/a71zh/a71:11/RP1A.200720.012/A715FZHSADXB1:user/release-keys
+[    0.437551][xF-A][6oo1] ro.carrier=unknown
+[    0.437599][xF-A][6oo1] ro.product.cpu.abilist32=armeabi-v7a,armeabi
+[    0.437647][xF-A][6oo1] ro.product.cpu.abilist64=arm64-v8a
+[    0.437695][xF-A][6oo1] ro.product.odm.name=a71zh
+[    0.437744][xF-A][6oo1] ro.product.odm.brand=samsung
+[    0.437791][xF-A][6oo1] ro.product.odm.model=SM-A715F
+[    0.437837][xF-A][6oo1] ro.product.odm.device=a71
+[    0.437884][xF-A][6oo1] ro.product.odm.manufacturer=samsung
+[    0.437930][xF-A][6oo1] ro.product.board=sm6150
+[    0.437976][xF-A][6oo1] ro.product.vendor.name=a71zh
+[    0.438023][xF-A][6oo1] ro.product.vendor.brand=samsung
+[    0.438069][xF-A][6oo1] ro.product.vendor.model=SM-A715F
+[    0.438113][xF-A][6oo1] ro.product.vendor.device=a71
+[    0.438157][xF-A][6oo1] ro.product.vendor.manufacturer=samsung
+[    0.438203][xF-A][6oo1] ro.product.first_api_level=29
+[    0.438249][xF-A][6oo1] ro.hardware.egl=adreno
+[    0.438296][xF-A][6oo1] ro.hardware.vulkan=adreno
+[    0.438343][xF-A][6oo1] ro.hardware.chipname=SM7150
+[    0.438390][xF-A][6oo1] ro.hardware.keystore=mdfpp
+[    0.438437][xF-A][6oo1] ro.hardware.gatekeeper=mdfpp
+[    0.438482][xF-A][6oo1] ro.hardware.keystore_desede=true
+[    0.438529][xF-A][6oo1] ro.bootimage.build.date=Thu Feb 29 17:38:58 KST 2024
+[    0.438575][xF-A][6oo1] ro.bootimage.build.date.utc=1709195938
+[    0.438622][xF-A][6oo1] ro.bootimage.build.fingerprint=samsung/a71zh/a71:11/RP1A.200720.012/A715FZHSADXB1:user/release-keys
+[    0.438669][xF-A][6oo1] ro.surface_flinger.has_HDR_display=true
+[    0.438716][xF-A][6oo1] ro.surface_flinger.protected_contents=true
+[    0.438763][xF-A][6oo1] ro.surface_flinger.use_color_management=true
+[    0.438810][xF-A][6oo1] ro.surface_flinger.has_wide_color_display=true
+[    0.438857][xF-A][6oo1] ro.surface_flinger.wcg_composition_dataspace=143261696
+[    0.438904][xF-A][6oo1] ro.surface_flinger.max_virtual_display_dimension=4096
+[    0.438951][xF-A][6oo1] ro.surface_flinger.max_frame_buffer_acquired_buffers=3
+[    0.438997][xF-A][6oo1] ro.surface_flinger.force_hwc_copy_for_virtual_displays=true
+[    0.439158][xF-A][6oo1] ro.build.fingerprint=samsung/a71zh/a71:11/RP1A.200720.012/A715FZHSADXB1:user/release-keys
+[    0.439266][xF-A][6oo1] pm.dexopt.boot=verify
+[    0.439313][xF-A][6oo1] pm.dexopt.ab-ota=speed-profile
+[    0.439359][xF-A][6oo1] pm.dexopt.shared=speed
+[    0.439405][xF-A][6oo1] pm.dexopt.install=speed-profile
+[    0.439451][xF-A][6oo1] pm.dexopt.inactive=verify
+[    0.439503][xF-A][6oo1] pm.dexopt.bg-dexopt=speed-profile
+[    0.439548][xF-A][6oo1] pm.dexopt.first-boot=quicken
+[    0.439643][xF-A][6oo1] ro.telephony.iwlan_operation_mode=legacy
+[    0.439734][xF-A][6oo1] ro.adb.secure=1
+[    0.439782][xF-A][6oo1] ro.secure=1
+[    0.439830][xF-A][6oo1] ro.com.google.clientidbase=android-samsung-ss
+[    0.439877][xF-A][6oo1] ro.build.PDA=A715FZHSADXB1
+[    0.439924][xF-A][6oo1] ro.security.keystore.keytype=sakv2,gak,
+[    0.439972][xF-A][6oo1] persist.sys.sf.hs_mode=0
+[    0.440060][xF-A][6oo1] sys.usb.configfs=1
+[    0.440379][xF-A][6oo1] ro.gsid.image_running=0
+[    0.440426][xF-A][6oo1] gsid.image_installed=0
+[    0.440757][xF-A][6oo1] log.tag.stats_log=I
+[    0.440845][xF-A][6oo1] ro.logd.size.stats=64K
+[    0.440892][xF-A][6oo1] ro.logd.auditd=false
+[    0.441627][xF-A][6oo1] ro.product_ship=true
+[    0.442154][xF-A][6oo1] ro.setupwizard.mode=OPTIONAL
+[    0.442202][xF-A][6oo1] ro.setupwizard.wifi_on_exit=false
+[    0.442247][xF-A][6oo1] ro.setupwizard.rotation_locked=false
+[    0.442293][xF-A][6oo1] setupwizard.theme=glif_v3_light
+[    0.442340][xF-A][6oo1] setupwizard.feature.enable_stencil_partner_customization=1
+[    0.442426][xF-A][6oo1] security.perf_harden=1
+[    0.442861][xF-A][6oo1] ro.security.cass.feature=1
+[    0.442909][xF-A][6oo1] ro.security.fips.ux=Disabled
+[    0.442955][xF-A][6oo1] ro.security.vpnpp.ver=2.4
+[    0.443001][xF-A][6oo1] ro.security.vpnpp.release=1.0
+[    0.443047][xF-A][6oo1] dev.mnt.blk.efs=sda
+[    0.443094][xF-A][6oo1] dev.mnt.blk.cache=sda
+[    0.443140][xF-A][6oo1] net.bt.name=Android
+[    0.443186][xF-A][6oo1] sys.perf.hmp=6:2
+[    0.443232][xF-A][6oo1] sys.config.ibs.enable=false
+[    0.443278][xF-A][6oo1] sys.config.hardcoder.enable=false
+[    0.443325][xF-A][6oo1] sys.config.activelaunch_enable=true
+[    0.443371][xF-A][6oo1] sys.vendor.shutdown.waittime=500
+[    0.443417][xF-A][6oo1] persist.sys.usb.config=mtp
+[    0.443464][xF-A][6oo1] security.ADP.version=0
+[    0.443510][xF-A][6oo1] security.ADP.policy_version=00000000
+[    0.443557][xF-A][6oo1] security.ASKS.version=0
+[    0.443603][xF-A][6oo1] security.ASKS.time_value=00000000
+[    0.443648][xF-A][6oo1] security.ASKS.rufs_enable=true
+[    0.443693][xF-A][6oo1] security.ASKS.policy_version=00000000
+[    0.445275][xF-A][6oo1] ro.odm.build.id=RP1A.200720.012
+[    0.445322][xF-A][6oo1] ro.odm.build.tags=release-keys
+[    0.445368][xF-A][6oo1] ro.odm.build.type=user
+[    0.445414][xF-A][6oo1] ro.odm.build.version.sdk=30
+[    0.445460][xF-A][6oo1] ro.odm.build.version.release=11
+[    0.445554][xF-A][6oo1] ro.odm.build.version.release_or_codename=11
+[    0.445577][xF-A][6oo1] ro.odm.product.cpu.abilist=arm64-v8a,armeabi-v7a,armeabi
+[    0.445587][xF-A][6oo1] ro.odm.product.cpu.abilist32=armeabi-v7a,armeabi
+[    0.445595][xF-A][6oo1] ro.odm.product.cpu.abilist64=arm64-v8a
+[    0.445604][xF-A][6oo1] ro.vendor.qb.id=77797327
+[    0.445612][xF-A][6oo1] ro.vendor.sec.radio.def_network=9
+[    0.445620][xF-A][6oo1] ro.vendor.sec.lteOnCdmaDevice=0
+[    0.445629][xF-A][6oo1] ro.vendor.epdg.support=true
+[    0.445637][xF-A][6oo1] ro.vendor.build.id=RP1A.200720.012
+[    0.445645][xF-A][6oo1] ro.vendor.build.tags=release-keys
+[    0.445653][xF-A][6oo1] ro.vendor.build.type=user
+[    0.445661][xF-A][6oo1] ro.vendor.build.version.sdk=30
+[    0.445669][xF-A][6oo1] ro.vendor.build.version.release=11
+[    0.445677][xF-A][6oo1] ro.vendor.build.version.release_or_codename=11
+[    0.445686][xF-A][6oo1] ro.vendor.product.cpu.abilist=arm64-v8a,armeabi-v7a,armeabi
+[    0.445695][xF-A][6oo1] ro.vendor.product.cpu.abilist32=armeabi-v7a,armeabi
+[    0.445704][xF-A][6oo1] ro.vendor.product.cpu.abilist64=arm64-v8a
+[    0.445712][xF-A][6oo1] ro.vendor.perf-hal.ver=2.2
+[    0.445720][xF-A][6oo1] ro.vendor.use_data_netmgrd=false
+[    0.445729][xF-A][6oo1] ro.vendor.extension_library=libqti-perfd-client.so
+[    0.445737][xF-A][6oo1] vendor.sec.rild.libpath=/vendor/lib64/libsec-ril.so
+[    0.445745][xF-A][6oo1] vendor.audio_hal.period_size=192
+[    0.445753][xF-A][6oo1] vendor.audio_hal.in_period_size=144
+[    0.445761][xF-A][6oo1] vendor.audio_hal.period_multiplier=4
+[    0.445778][xF-A][6oo1] persist.vendor.bt.aac_frm_ctl.enabled=true
+[    0.445787][xF-A][6oo1] persist.vendor.qcomsysd.enabled=1
+[    0.445795][xF-A][6oo1] persist.vendor.dpmhalservice.enable=1
+[    0.445846][xF-A][6oo1] ro.vendor.qti.va_odm.support=1
+[    0.445940][xF-A][6oo1] ro.vendor.qti.va_aosp.support=1
+[    0.446281][xF-A][6oo1] vendor.gralloc.disable_ubwc=0
+[    0.447447][xF-A][6oo1] persist.vendor.radio.atfwd.start=true
+[    0.447496][xF-A][6oo1] persist.vendor.radio.enableadvancedscan=true
+[    0.448183][xF-A][6oo1] security.securehw.available=false
+[    0.448272][xF-A][6oo1] security.securenvm.available=false
+[    0.448377][xF-A][6oo1] ro.vendor.build.security_patch=2024-02-01
+[    0.449393][xF-A][6oo1] ro.vndk.version=30
+[    0.449481][xF-A][6oo1] ro.crypto.metadata_init_delete_all_keys.enabled=false
+[    0.449765][xF-A][6oo1]
+[    0.449814][xF-A][6oo1] Supported API: 3
+[    0.471654][xF-A][6oo1]
+[    0.471706][xF-A][6oo1] [Formatting data]
+[    0.471754][xF-A][6oo1]
+[    0.471772][xF-A][6oo1] -- Wiping data...
+[    0.507570][xF-A][6oo1] I:[PDP] not a RAM-loading scenario, metaData file= 0, allocTable file= 0
+[    0.507631][xF-A][6oo1]
+[    0.507649][xF-A][6oo1] -- Wiping data...
+[    0.588945][xF-A][6oo1] Formatting /data...
+[    0.626214][xF-A][6oo1] I:MDF_RECOVERY : completed to initialize222.
+[    0.626475][xF-A][6oo1] exec /system/bin/make_f2fs -g android /dev/block/bootdevice/by-name/userdata 28743387 
+[   62.774080][xF-A][6oo1]
+[   62.774141][xF-A][6oo1] 	F2FS-tools: mkfs.f2fs Ver: 1.14.0 (2020-08-24)
+[   62.774154][xF-A][6oo1]
+[   62.774164][xF-A][6oo1] Info: Disable heap-based policy
+[   62.774173][xF-A][6oo1] Info: Debug level = 1
+[   62.774182][xF-A][6oo1] Info: Trim is enabled
+[   62.774191][xF-A][6oo1] Info: Set conf for android
+[   62.774200][xF-A][6oo1] 	Info: No support kernel version!
+[   62.774209][xF-A][6oo1] Info: wanted sectors = 28743387 (in 4096 bytes)
+[   62.774218][xF-A][6oo1] Info: total device sectors = 28743391 (in 4096 bytes)
+[   62.774228][xF-A][6oo1] Info: Segments per section = 1
+[   62.774237][xF-A][6oo1] Info: Sections per zone = 1
+[   62.774245][xF-A][6oo1] Info: sector size = 4096
+[   62.774255][xF-A][6oo1] Info: total sectors = 28743387 (112278 MB)
+[   62.774264][xF-A][6oo1] Info: zone aligned segment0 blkaddr: 512
+[   62.774273][xF-A][6oo1] Info: add quota type = 0 => 4
+[   62.774282][xF-A][6oo1] Info: add quota type = 1 => 5
+[   62.774291][xF-A][6oo1] Info: mount_opts is set as flush_group=5666,inlinecrypt
+[   62.774300][xF-A][6oo1] Info: [/dev/block/bootdevice/by-name/userdata] Discarding device
+[   62.774310][xF-A][6oo1] Info: This device doesn't support BLKSECDISCARD
+[   62.774319][xF-A][6oo1] Info: Discarded 112278 MB
+[   62.774328][xF-A][6oo1] [f2fs_init_sit_area: 659] 	Filling sit area at offset 0x00600000
+[   62.774338][xF-A][6oo1] [f2fs_init_nat_area: 693] 	Filling nat area at offset 0x00e00000
+[   62.774347][xF-A][6oo1] [f2fs_write_root_inode:1312] 	Writing root inode (hot node), 1d200 0 200 at offset 0x00119296
+[   62.774357][xF-A][6oo1] [f2fs_write_default_quota:1388] 	Writing quota data, at offset 0001d801, 0001d802
+[   62.774367][xF-A][6oo1] [f2fs_write_qf_inode:1479] 	Writing quota inode (hot node), 1d200 0 200 at offset 0x00119297
+[   62.774376][xF-A][6oo1] [f2fs_write_default_quota:1388] 	Writing quota data, at offset 0001d803, 0001d804
+[   62.774385][xF-A][6oo1] [f2fs_write_qf_inode:1479] 	Writing quota inode (hot node), 1d200 0 200 at offset 0x00119298
+[   62.774395][xF-A][6oo1] [f2fs_update_nat_root:1533] 	Writing nat root, at offset 0x00000e00
+[   62.774404][xF-A][6oo1] [f2fs_add_default_dentry_root:1730] 	Writing default dentry root, at offset 0x0001d800
+[   62.774413][xF-A][6oo1] Info: Overprovision ratio = 0.600%
+[   62.774422][xF-A][6oo1] Info: Overprovision segments = 674 (GC reserved = 341)
+[   62.774432][xF-A][6oo1] [f2fs_write_check_point_pack: 852] 	Writing main segments, cp at offset 0x00000200
+[   62.774442][xF-A][6oo1] [f2fs_write_check_point_pack:1007] 	Writing Segment summary for HOT/WARM/COLD_DATA, at offset 0x00000201
+[   62.774468][xF-A][6oo1] [f2fs_write_check_point_pack:1034] 	Writing Segment summary for HOT_NODE, at offset 0x00000202
+[   62.774479][xF-A][6oo1] [f2fs_write_check_point_pack:1046] 	Writing Segment summary for WARM_NODE, at offset 0x00000203
+[   62.774488][xF-A][6oo1] [f2fs_write_check_point_pack:1057] 	Writing Segment summary for COLD_NODE, at offset 0x00000204
+[   62.774497][xF-A][6oo1] [f2fs_write_check_point_pack:1065] 	Writing cp page2, at offset 0x00000205
+[   62.774506][xF-A][6oo1] [f2fs_write_check_point_pack:1085] 	Writing NAT bits pages, at offset 0x000003fe
+[   62.774515][xF-A][6oo1] [f2fs_write_check_point_pack:1106] 	Writing cp page 1 of checkpoint pack 2, at offset 0x00000400
+[   62.774524][xF-A][6oo1] [f2fs_write_check_point_pack:1125] 	Writing cp page 2 of checkpoint pack 2, at offset 0x00000405
+[   62.774533][xF-A][6oo1] [f2fs_write_super_block:1158] 	Writing super block, at offset 0x00000000
+[   62.774542][xF-A][6oo1] Info: format successful
+[   62.785565][xF-A][6oo1] done /system/bin/make_f2fs -g android /dev/block/bootdevice/by-name/userdata 28743387 , return value 0
+[   62.815823][xF-A][6oo1] I:[PDP] lstat /c____/pdp_b__ : 0 - No PDP scenario 
+[   62.896533][xF-A][6oo1] Formatting /cache...
+[   62.928780][xF-A][6oo1] exec /system/bin/mke2fs -F -b 4096 -L cache -t ext4 /dev/block/bootdevice/by-name/cache 
+[   62.942644][xF-A][6oo1] mke2fs 1.45.4 (23-Sep-2019)
+[   62.992404][xF-A][6oo1] Discarding device blocks:   4096/102400             done                            
+[   62.993104][xF-A][6oo1] Discard takes 0.00069s.
+[   62.993273][xF-A][6oo1] Creating filesystem with 102400 4k blocks and 25600 inodes
+[   62.993349][xF-A][6oo1] Filesystem UUID: ec219a42-a7f2-4ede-b2a7-c6a1a8a2fbbd
+[   62.993442][xF-A][6oo1] Superblock backups stored on blocks: 
+[   62.993585][xF-A][6oo1] 	32768, 98304
+[   62.993648][xF-A][6oo1]
+[   62.993880][xF-A][6oo1] Allocating group tables: 0/4   done                            
+[   62.994480][xF-A][6oo1] Writing inode tables: 0/4   done                            
+[   63.003526][xF-A][6oo1] Creating journal (1024 blocks): done
+[   63.006310][xF-A][6oo1] Writing superblocks and filesystem accounting information: 0/4   done
+[   63.006358][xF-A][6oo1]
+[   63.006427][xF-A][6oo1] This filesystem will be automatically checked every 32 mounts or
+[   63.006461][xF-A][6oo1] 180 days, whichever comes first.  Use tune2fs -c or -i to override.
+[   63.007733][xF-A][6oo1] done /system/bin/mke2fs -F -b 4096 -L cache -t ext4 /dev/block/bootdevice/by-name/cache , return value 0
+[   63.008759][xF-A][6oo1] I:[libfs_mgr]superblock s_max_mnt_count:32,/dev/block/bootdevice/by-name/cache
+[   63.011639][xF-A][6oo1] I:[libfs_mgr]__mount(source=/dev/block/bootdevice/by-name/cache,target=/cache,type=ext4)=0: Success
+[   63.011730][xF-A][6oo1] I:[libfs_mgr]__mount return 0(source=cache,target=/cache,type=ext4,flags=0,options=): Success
+[   63.012804][xF-A][6oo1] libc: Unable to set property "ro.boottime.init.mount.cache" to "3": error code: 0x18, try count : 1
+[   63.013303][xF-A][6oo1] libc: Unable to set property "ro.boottime.init.mount.cache" to "3": error code: 0x18, try count : 2
+[   63.013761][xF-A][6oo1] libc: Unable to set property "ro.boottime.init.mount.cache" to "3": error code: 0x18, try count : 3
+[   63.068546][xF-A][6oo1] chmod for /cache/recovery/last_maps failed (No such file or directory)
+[   63.068624][xF-A][6oo1] chown for /cache/recovery/last_maps failed (No such file or directory)
+[   63.132150][xF-A][6oo1] Formatting /metadata...
+[   63.167148][xF-A][6oo1] exec /system/bin/mke2fs -F -b 4096 -L metadata -t ext4 /dev/block/bootdevice/by-name/metadata 8190 
+[   63.179492][xF-A][6oo1] mke2fs 1.45.4 (23-Sep-2019)
+[   63.209001][xF-A][6oo1] Discarding device blocks: 4096/8190         done                            
+[   63.209643][xF-A][6oo1] Discard takes 0.00062s.
+[   63.209799][xF-A][6oo1] Creating filesystem with 8190 4k blocks and 2048 inodes
+[   63.209870][xF-A][6oo1]
+[   63.210095][xF-A][6oo1] Allocating group tables: 0/1   done                            
+[   63.210844][xF-A][6oo1] Writing inode tables: 0/1   done                            
+[   63.220219][xF-A][6oo1] Creating journal (1024 blocks): done
+[   63.222116][xF-A][6oo1] Writing superblocks and filesystem accounting information: 0/1   done
+[   63.222160][xF-A][6oo1]
+[   63.222228][xF-A][6oo1] This filesystem will be automatically checked every 29 mounts or
+[   63.222263][xF-A][6oo1] 180 days, whichever comes first.  Use tune2fs -c or -i to override.
+[   63.223531][xF-A][6oo1] done /system/bin/mke2fs -F -b 4096 -L metadata -t ext4 /dev/block/bootdevice/by-name/metadata 8190 , return value 0
+[   63.224619][xF-A][6oo1] Data wipe complete.
+[   63.248728][xF-A][6oo1] running total wipe-data time : 62.778s
+[   63.248813][xF-A][6oo1]
+[   63.248876][xF-A][6oo1] [start failed section]
+[   63.265347][xF-A][6oo1]
+[   63.265420][xF-A][6oo1] [out-recovery]
+[   63.278079][xF-A][6oo1] copy_avc_msg_to_data
+[   63.279093][xF-A][6oo1] I:[libfs_mgr]superblock s_max_mnt_count:32,/dev/block/bootdevice/by-name/cache
+[   63.281515][xF-A][6oo1] I:[libfs_mgr]__mount(source=/dev/block/bootdevice/by-name/cache,target=/cache,type=ext4)=0: Success
+[   63.281608][xF-A][6oo1] I:[libfs_mgr]__mount return 0(source=cache,target=/cache,type=ext4,flags=0,options=): Success
+[   63.282468][xF-A][6oo1] libc: Unable to set property "ro.boottime.init.mount.cache" to "2": error code: 0x18, try count : 1
+[   63.282995][xF-A][6oo1] libc: Unable to set property "ro.boottime.init.mount.cache" to "2": error code: 0x18, try count : 2
+[   63.283453][xF-A][6oo1] libc: Unable to set property "ro.boottime.init.mount.cache" to "2": error code: 0x18, try count : 3
+[   63.283569][xF-A][6oo1] copy_file '/proc/avc_msg' '/cache/recovery/last_avc_msg_recovery'
+[   63.290658][xF-A][6oo1] Rebooting...
+[   63.315323][xF-A][6oo1] SecReboot(userrequested,recovery)
+[   63.315434][xF-A][6oo1] ## FinishRecovery(delcmd=1, clearBCB=1, check_unlink=1)
+[   63.315570][xF-A][6oo1] I:Saving locale "zh-Hant-TW"
+[   63.317820][xF-A][6oo1] I:[libfs_mgr]superblock s_max_mnt_count:32,/dev/block/bootdevice/by-name/cache
+[   63.319795][xF-A][6oo1] I:[libfs_mgr]__mount(source=/dev/block/bootdevice/by-name/cache,target=/cache,type=ext4)=0: Success
+[   63.319886][xF-A][6oo1] I:[libfs_mgr]__mount return 0(source=cache,target=/cache,type=ext4,flags=0,options=): Success
+[   63.320748][xF-A][6oo1] libc: Unable to set property "ro.boottime.init.mount.cache" to "2": error code: 0x18, try count : 1
+[   63.321212][xF-A][6oo1] libc: Unable to set property "ro.boottime.init.mount.cache" to "2": error code: 0x18, try count : 2
+[   63.321690][xF-A][6oo1] libc: Unable to set property "ro.boottime.init.mount.cache" to "2": error code: 0x18, try count : 3
+[   63.324306][xF-A][6oo1] I:## clear BCB message
+[   63.324780][xF-A][6oo1] I:## unlink /cache/recovery/command
+[   63.350827][xF-A][6oo1] save_current_log true, has_cashe true.
+[   63.351966][xF-A][6oo1] I:[libfs_mgr]superblock s_max_mnt_count:32,/dev/block/bootdevice/by-name/cache
+[   63.354235][xF-A][6oo1] I:[libfs_mgr]__mount(source=/dev/block/bootdevice/by-name/cache,target=/cache,type=ext4)=0: Success
+[   63.354327][xF-A][6oo1] I:[libfs_mgr]__mount return 0(source=cache,target=/cache,type=ext4,flags=0,options=): Success
+[   63.355145][xF-A][6oo1] libc: Unable to set property "ro.boottime.init.mount.cache" to "2": error code: 0x18, try count : 1
+[   63.355639][xF-A][6oo1] libc: Unable to set property "ro.boottime.init.mount.cache" to "2": error code: 0x18, try count : 2
+[   63.356147][xF-A][6oo1] libc: Unable to set property "ro.boottime.init.mount.cache" to "2": error code: 0x18, try count : 3

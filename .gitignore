@@ -40,3 +40,14 @@ docs/DataSheet/google-services.json
 
 # Android logs
 smart_racket_app/android/br/dumpstate-*.txt
+.DS_Store
+# macOS
+.DS_Store
+**/.DS_Store
+
+# JetBrains
+.idea/
+smart_racket_app/android/br/dumpstate-*.txt
+
+# Firebase
+smart_racket_app/android/app/google-services.json
