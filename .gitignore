@@ -48,3 +48,6 @@ smart_racket_app/android/br/dumpstate-*.txt
 # JetBrains
 .idea/
 smart_racket_app/android/br/dumpstate-*.txt
+
+# Firebase
+smart_racket_app/android/app/google-services.json
