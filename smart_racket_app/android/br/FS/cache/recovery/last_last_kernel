@@ -1,0 +1,786 @@
+05894} ** XBL(0) **
+{405894} 
+Format: Log Type - Time(microsec) - Message - Optional Info
+Log Type: B - Since Boot(Power On Reset),  D - Delta,  S - Statistic
+S - QC_IMAGE_VERSION_STRING=BOOT.XF.3.1-00270-SM6150LZB-1
+S - IMAGE_VARIANT_STRING=SDM7150LA
+S - OEM_IMAGE_VERSION_STRING=SWDH2819
+S - Boot Interface: UFS
+S - Secure Boot: On
+S - Boot Config @ 0x00786070 = 0x000002c9
+S - JTAG ID @ 0x00786130 = 0x000e60e1
+S - OEM ID @ 0x00786138 = 0x00200000
+S - Feature Config Row 0 @ 0x007841a0 = 0x0850200712468410
+S - Feature Config Row 1 @ 0x007841a8 = 0xa014000000008080
+S - Core 0 Frequency, 1497 MHz
+S - PBL Patch Ver: 2
+S - PBL freq: 1190 MHZ
+D -      6339 - pbl_apps_init_timestamp
+D -     61490 - bootable_media_detect_timestamp
+D -      1003 - bl_elf_metadata_loading_timestamp
+D -      6172 - bl_hash_seg_auth_timestamp
+D -      7204 - bl_elf_loadable_segment_loading_timestamp
+D -      4932 - bl_elf_segs_hash_verify_timestamp
+D -      4707 - bl_sec_hash_seg_auth_timestamp
+D -       782 - bl_sec_segs_hash_verify_timestamp
+D -        35 - pbl_populate_shared_data_and_exit_timestamp
+S -     92664 - PBL, End
+B -    111965 - SBL1, Start
+B -    116632 - SBL1 BUILD @ 18:52:50 on Jan 25 2021
+B -    118980 - boot_flash_init, Start
+D -        30 - boot_flash_init, Delta
+B -    119011 - xblconfig_init, Start
+B -    213469 - UFS INQUIRY ID: MICRON  MT128GASAO4U219L0007
+B -    224907 - UFS MD   : 2C0120
+B -    224907 - UFS size : 128GB
+B -    224907 - UFS spec : 0210
+D -      5521 - Auth Metadata
+D -    120658 - xblconfig_init, Delta
+B -    239669 - boot_config_data_table_init, Start
+B -    239669 - Using default CDT
+D -        30 - boot_config_data_table_init, Delta - (0 Bytes)
+B -    239699 - CDT Version:3,Platform ID:34,Major ID:1,Minor ID:0,Subtype:0
+B -    241285 - pm_device_init, Start
+B -    246257 - PM: PM 0=0x8000028000000001:0x0 
+B -    246287 - PM: PM 2=0x8000018000000020:0x0 
+B -    246348 - PM: HARD_RESET by PS_HOLD
+B -    370361 - PM: SET_VAL:Skip
+B -    370605 - PM: PSI: b0x20_v0x34
+B -    372435 - PM: SMB1390 Optimization Settings
+B -    372557 - PM: Device Init # SPMI Transn: 5572
+D -    131272 - pm_device_init, Delta
+B -    372557 - pm_driver_init, Start
+B -    377803 - PM: Driver Init # SPMI Transn: 369
+D -      5246 - pm_driver_init, Delta
+B -    377834 - pm_driver_init, configuring PMIC to do a DVDD reset, Start
+D -      1738 - pm_driver_init, configuring PMIC to do a DVDD reset, Delta
+B -    379603 - vsense_init, Start
+D -         0 - vsense_init, Delta
+B -    385581 - sbl1_ddr_set_params, Start
+B -    385764 - Pre_DDR_clock_init, Start
+D -        61 - Pre_DDR_clock_init, Delta
+D -       732 - sbl1_ddr_set_params, Delta
+B -    386313 - sbl1_ddr_init, Start
+D -      8540 - sbl1_ddr_init, Delta
+B -    394853 - DSF version = 82.2.28
+{405985} samsung_board_init, Entry
+{406290} samsung_board_init, Exit
+{406504} Loading APDP Image
+{412268} Auth Metadata
+{413000} Segments hash check
+{413031} Image Loaded, Delta
+{413397} QB link : https://android.qb.sec.samsung.net/build/37747740
+{413397} DEBUG LEVEL : LOW
+{413397} PWR[released] INT[released] DN[released] UP[released]
+{413427} Current PON value 0x8000028000000001
+{413458} Current PON fault reason value 0x0000000000000000
+{413488} 
+	OFF : POFF_SEQ 
+	POFF : PS_HOLD 
+	ON : PON_SEQ 
+	WARM : 
+	PON : HARD_RESET[O] 
+{413641} ResetReason don't define case 1, RR.p will write NP
+{413641} RR : NP
+{414617} UFS MD   : 2C0120
+{414617} UFS size : 128GB
+{414617} UFS spec : 0210
+{414647} usb: UFS Serial
+{414678} usb: fedl, vbus_low
+{415044} sec_board_rev_smem_copy
+{415044} DDR vendor:Micron@0x860051c0
+{418734} AdcReadSECBoardID() ADC Value: 67730
+{418765} HW REV:6
+{418826} PM: SMEM Chgr Info Write Success
+{419100} Loading OEM_MISC Image
+{419100} Image Loaded, Delta
+{419131} Loading QTI_MISC Image
+{419131} Image Loaded, Delta
+{423553} PM: PM Total Mem Allocated: 1801 
+{423553} Loading AOP Image
+{429348} Auth Metadata
+{435296} Segments hash check
+{435326} Image Loaded, Delta
+{435326} Loading QSEE Dev Config Image
+{441152} Auth Metadata
+{442585} Segments hash check
+{442616} Image Loaded, Delta
+{442616} Loading QSEE Image
+{451949} Auth Metadata
+{489006} Segments hash check
+{489037} Image Loaded, Delta
+{489189} Loading SEC Image
+{494893} Auth Metadata
+{495442} Segments hash check
+{495442} Image Loaded, Delta
+{495472} Loading QHEE Image
+{501389} Auth Metadata
+{511820} Segments hash check
+{511851} Image Loaded, Delta
+{511851} Loading STI Image
+{511851} Image Loaded, Delta
+{512003} Loading APPSBL Image
+{517615} Auth Metadata
+{541741} Segments hash check
+{541741} Image Loaded, Delta
+{547261} SBL1, End
+{547292} SBL1, Delta
+{547292} Flash Throughput, 113000 KB/s  (4999151 Bytes,  44092 us)
+{547292} DDR Frequency, 1353 MHz
+
+
+UEFI Start     [  728] SEC
+ASLR        : ON
+DEP         : ON (RTB)
+Timer Delta : +1 mS
+RAM Entry 0 : Base 0x0000000080000000  Size 0x0000000100000000
+RAM Entry 1 : Base 0x0000000180000000  Size 0x00000000FBA00000
+UART Buffer size set to 0x8000 
+Multithread : ON
+CPU Cores   : 8 (init 1)
+Continue booting UEFI on Core 0
+CONF File   : uefiplatLA.cfg
+UEFI Ver    : 5.0.210125.BOOT.XF.3.1-00270-SM6150LZB-1
+Build Info  : 64b Jan 25 2021 18:53:20
+Boot Device : UFS
+PROD Mode   : TRUE
+Retail      : TRUE
+ - 0x09A3AE000 [  914] DxeCore.efi
+ - 0x09A34D000 [  922] EnvDxe.efi
+ - 0x09A344000 [  923] RscRtDxe.efi
+ - 0x09A33C000 [  923] SCHandlerRtDxe.efi
+ - 0x099AF0000 [  923] RuntimeDxe.efi
+ - 0x09A328000 [  923] ArmCpuDxe.efi
+ - 0x09A31F000 [  925] ArmGicDxe.efi
+ - 0x09A318000 [  925] MetronomeDxe.efi
+ - 0x09A310000 [  925] ArmTimerDxe.efi
+ - 0x09A307000 [  925] SmemDxe.efi
+ - 0x09A2C5000 [  926] DALSys.efi
+ - 0x09A2BD000 [  926] HWIODxeDriver.efi
+ - 0x09A2B2000 [  926] ChipInfo.efi
+ - 0x09A2AA000 [  927] PlatformInfoDxeDriver.efi
+ - 0x09A29F000 [  927] HALIOMMU.efi
+ - 0x09A28C000 [  928] ULogDxe.efi
+ - 0x09A284000 [  928] CmdDbDxe.efi
+ - 0x09A271000 [  929] NpaDxe.efi
+ - 0x09A261000 [  929] RpmhDxe.efi
+ - 0x09A258000 [  930] PdcDxe.efi
+ - 0x09A214000 [  930] ClockDxe.efi
+ - 0x09A20A000 [  937] ShmBridgeDxe.efi
+ - 0x09A1FE000 [  938] ScmDxe.efi
+ - 0x09A1F3000 [  939] DiskIoDxe.efi
+ - 0x09A1E7000 [  939] PartitionDxe.efi
+ - 0x09A1DF000 [  940] EnglishDxe.efi
+ - 0x09A1D4000 [  940] FvSimpleFileSystem.efi
+ - 0x099A90000 [  940] SdccDxe.efi
+ - 0x09A1B8000 [  941] UFSDxe.efi
+UFS INQUIRY ID: MICRON  MT128GASAO4U219L0007
+ - 0x09A1A8000 [  962] Fat.efi
+ - 0x098856000 [  963] TzDxe.efi
+ - 0x0987BB000 [  965] VariableDxe.efi
+LoadSecureApps: TZApps region 0x4B00000@0x86D00000
+AppReg Init:15 mS
+Varstore partition 165BD6BC-9250-4AC8-95A7-A93F4A440066 - #handles = 0
+Varstore partition 165BD6BC-9250-4AC8-95A7-A93F4A440066 - #handles = 0
+Varstore partition 165BD6BC-9250-4AC8-95A7-A93F4A440066 - #handles = 0
+VarStore NS-world partition not found
+ - 0x098866000 [ 1190] QcomWDogDxe.efi
+HW Wdog Setting from PCD : Disabled
+ - 0x098592000 [ 1191] DALTLMM.efi
+ - 0x09857B000 [ 1191] SPMI.efi
+ - 0x098570000 [ 1194] ResetRuntimeDxe.efi
+ - 0x098529000 [ 1195] PmicDxe.efi
+PM0: 40, PM2: 39, 
+ - 0x098569000 [ 1203] WatchdogTimer.efi
+ - 0x09855F000 [ 1203] ASN1X509Dxe.efi
+ - 0x098555000 [ 1204] SecRSADxe.efi
+ - 0x09850A000 [ 1204] VerifiedBootDxe.efi
+ - 0x09854D000 [ 1204] EmbeddedMonotonicCounter.efi
+ - 0x098520000 [ 1207] RealTimeClock.efi
+ - 0x098502000 [ 1208] PrintDxe.efi
+ - 0x0984DD000 [ 1208] DevicePathDxe.efi
+ - 0x0984FA000 [ 1208] CapsuleRuntimeDxe.efi
+ - 0x098496000 [ 1209] HiiDatabase.efi
+ - 0x0984D3000 [ 1209] FontDxe.efi
+ - 0x0983C4000 [ 1214] QcomBds.efi
+ - 0x09848D000 [ 1216] I2C.efi
+ - 0x098474000 [ 1217] AdcDxe.efi
+ - 0x098455000 [ 1217] UsbPwrCtrlDxe.efi
+ - 0x09844D000 [ 1218] QcomChargerDxeLA.efi
+ - 0x098444000 [ 1218] ChargerExDxe.efi
+ - 0x0983A9000 [ 1218] UsbfnDwc3Dxe.efi
+ - 0x0984C3000 [ 1219] UsbConfigDxe.efi
+UsbConfigLibOpenProtocols: gPmicNpaClientSS2 cannot be created
+UsbConfigPortsQueryConnectionChange: UFP and Type-C
+UsbConfigPortsQueryConnectionChange: usbport->connectstate: ATT
+ConnectSts : Attach, Data Role : UFP (DEVICE Mode), Lane : CC1, CoreNum : 0
+HandlePortPartnerXtach: Cable Attach
+ - 0x098412000 [ 1219] ButtonsDxe.efi
+ - 0x098433000 [ 1221] TsensDxe.efi
+ - 0x09839F000 [ 1221] Ccic.efi
+CcicDxe: Start...
+[CCIC] ccic_init
+i2c driver is not initialized
+GPIO I2C : NO ACK[CCIC]  reg:0x31 - val:00
+[CCIC] S2mu106!!!
+[CCIC] S2mu107_Ccic_init_i2c: 1
+[CCIC] name: SM17c_po+
+[CCIC] scl: 43
+[CCIC] sda: 42
+[CCIC] scl_cfg: 256
+[CCIC] sda: 256
+ccic_is_s2mu107
+[CCIC]  reg:B2 - val:00 ret:00
+[CCIC]  0x1 = 0x0
+[CCIC]  0x2 = 0xFA
+[CCIC]  0x3 = 0x88
+[CCIC]  0x4 = 0x90
+[CCIC]  0x5 = 0x88
+[CCIC]  0x6 = 0x88
+[CCIC]  0x7 = 0x47
+[CCIC]  0x8 = 0xA
+[CCIC]  0x9 = 0x0
+[CCIC]  0xa = 0x90
+[CCIC]  0xb = 0xF
+[CCIC]  0xc = 0x90
+[CCIC]  0x18 = 0xD3
+[CCIC]  0xb2 = 0x0
+[CCIC]   BEFORE VBUS(0)
+[CCIC] ccic found!!
+ - 0x098395000 [ 1225] Muic.efi
+MuicDxe: Start...
+[A71] MUIC Dualization Check
+Muic, Init...
+i2c driver is not initialized
+[muic]s2mu107 pmic rev reg_data 0x00 (rev:0x0)
+Muic, Interrupt 1:0x00, 2:0x00
+Muic, DEV_T2: 0x00, mUID ADC : 0x00
+[CCIC] RID = 00
+(RID_OPEN)
+Muic, ADC Value : 0x07, Dev Type1 : 0x00, Vbus Status : 0x00
+S2MU107 division value : 0x00
+MUIC Device : S2MU106
+Muic, S2mu106_muic_init...
+S2mu106_muic_init_i2c: 1
+name: Sm16gi
+scl: 43
+sda: 42
+scl_cfg: 256
+sda: 256
+Muic, Interrupt 1:0x00, 2:0x00
+Muic, DEV_T2: 0x00, mUID ADC : 0x1F
+[CCIC] RID = 00
+(RID_OPEN)
+Muic, ADC Value : 0x07, Dev Type1 : 0x00, Vbus Status : 0x00
+S2MU106 division value : 0x01
+ - 0x09840A000 [ 1228] RidAdc.efi
+RidAdcDxe: Start...
+rid_adc_init
+RID_ADC, Init...
+Done to set pmic gpio status Success
+[vbat_sense low] Success pmic protocol: Success
+rid_adc value[0]: 0
+rid_adc value[1]: 0
+rid_adc value[2]: 0
+rid_adc value[3]: 0
+rid_adc value[4]: 0
+sum += 0
+sum += 0
+sum += 0
+min_idx: 0, min: 0, max_idx:4, max: 0, rid_adc: 0
+get_jig_type = 0
+ - 0x098378000 [ 1480] Chg.efi
+charging_func_init
+get_hw_rev : hw rev=0x6 
+[S2MU106 CHG]
+i2c driver is not initialized
+charging_func_init : pmic rev=0x11 
+Muic, Interrupt 1:0x00, 2:0x00
+Muic, DEV_T2: 0x00, mUID ADC : 0x1F
+[CCIC] RID = 00
+(RID_OPEN)
+Muic, ADC Value : 0x07, Dev Type1 : 0x00, Vbus Status : 0x00
+[CCIC] RID = 00
+(RID_OPEN)
+Not ADC Oriented Device
+chg_get_charger_status : cable_type(0), jig_orientation(0), vbus_status(0)
+s2mu106_get_wireless_charger_detect : wireless check (0x00)
+chg_get_charger_status : cable_type(0), vbus_status(0)
+ - 0x0982D9000 [ 1481] DisplayDxe.efi
+displaydriverlib_init ++: ndx=0
+displaydriverlib_init HW_REV : 0x6, ndx=0
+S6E3FA9_AMB667UM06_FHD_octa_init HW_REV = 6
+S6E3FA9_AMB667UM06_FHD_octa_init
+PBA_BOOTING_FHD_init
+displaydriverlib_init --: ndx=0
+displaydriverlib_init ++: ndx=1
+displaydriverlib_init HW_REV : 0x6, ndx=1
+PBA_BOOTING_FHD_init
+displaydriverlib_init --: ndx=1
+samsung_panel_power_up (1) 
+display_panel_power_up_S6E3FA9_AMB667UM06 Not XBL_LOADER ++
+display_panel_power_up_S6E3FA9_AMB667UM06 POWER_TLMM_GPIO Enable Success
+display_panel_power_up_S6E3FA9_AMB667UM06 POWER_UP_VDDR_GPIO Enable Success
+display_panel_power_up_S6E3FA9_AMB667UM06 --
+GetPanelXmlConfig ++ (15) 
+samsung_panel_select_xml_data ++
+samsung_check_support_panel panel_list_max : 2 ++ 
+display_panel_power_up_S6E3FA9_AMB667UM06 Not XBL_LOADER ++
+display_panel_power_up_S6E3FA9_AMB667UM06 POWER_TLMM_GPIO Enable Success
+display_panel_power_up_S6E3FA9_AMB667UM06 POWER_UP_VDDR_GPIO Enable Success
+display_panel_power_up_S6E3FA9_AMB667UM06 --
+samsung_panel_reset enable : 1++
+samsung_panel_reset: Reset_N state : 0 , gpio_num : 11
+samsung_panel_reset: Reset_N state : 0 , gpio_num : 11
+samsung_panel_reset: Reset_N state : 1 , gpio_num : 11
+samsung_panel_reset enable : 1--
+Default prepare read function
+read_ddi_id ++: num_panel=0
+Sent max package command
+Sent max package command
+Sent max package command
+read_ddi_id[0]: id1: 0xC1, id2: 0x44, id3: 0x00 type: 0x00 color: 0x01
+read_ddi_id --
+ddi_id: 0xC14400
+samsung_check_support_panel: valid_bit_mask(014400) expect_data(014400) 
+samsung_check_support_panel: panel is matched : num(0)
+samsung_check_support_panel: lcd_id : 0xC14400
+samsung_panel_reset enable : 0++
+samsung_panel_reset enable : 0--
+check_support_panel_S6E3FA9_AMB667UM06++
+check_support_panel_S6E3FA9_AMB667UM06 panel is supported
+samsung_check_support_panel: found supported panel: 0
+samsung_check_support_panel -- 
+samsung_panel_select_xml_data: Selected - Panel ID : 42 
+samsung_panel_select_xml_data --
+DisplayDxe: Resolution 1080x2400 (1 intf)
+ - 0x09834D000 [ 1559] GpiDxe.efi
+ - 0x09843D000 [ 1612] GpioExp.efi
+GpioExpDxe: Skip...
+ - 0x09836A000 [ 1613] HashDxe.efi
+ - 0x0982AC000 [ 1613] CipherDxe.efi
+ - 0x09838D000 [ 1614] RngDxe.efi
+ - 0x098362000 [ 1614] SimpleTextInOutSerial.efi
+ - 0x0982A3000 [ 1615] ConPlatformDxe.efi
+ - 0x098288000 [ 1615] ConSplitterDxe.efi
+ - 0x09827C000 [ 1616] GraphicsConsoleDxe.efi
+ - 0x09826F000 [ 1617] SecurityStubDxe.efi
+ - 0x098250000 [ 1618] CPRDxe.efi
+ - 0x098299000 [ 1622] DDRInfoDxe.efi
+ - 0x098243000 [ 1622] UsbMsdDxe.efi
+ - 0x098236000 [ 1623] UsbDeviceDxe.efi
+ - 0x098201000 [ 1623] PILDxe.efi
+pil-abl Done t=265ms s=9ms a=31ms f=224ms
+ - 0x098225000 [ 1894] Vib.efi
+ - 0x097DE8000 [ 1895] LimitsDxe.efi
+ISENSE TOTAL TIME 3ms
+BDS Entry      [ 1899] 
+samsung_panel_reset enable : 1++
+samsung_panel_reset: Reset_N state : 0 , gpio_num : 11
+samsung_panel_reset: Reset_N state : 0 , gpio_num : 11
+samsung_panel_reset: Reset_N state : 1 , gpio_num : 11
+samsung_panel_reset enable : 1--
+samsung_send_self_mask ++ 
+Self Mask Enable(1) ++
+panel_type=0 panel_color=1
+total data size [5296]
+cmd size [331] paylod_size [16]
+Self Mask Enable(1) --
+samsung_send_self_mask -- 
+update_cmdline_ddi_id: ndx=0, Append lcd_id : lcd_id=0xC14400
+update_cmdline_ddi_id: ndx=1, Append lcd_id : lcd_id2=0xC14400
+Wled Protocol EnableModulatorA failed
+Wled Protocol SetLedDutyCycle failed
+Wled Protocol ModulatorSrcSelect failed
+Wled Protocol EnableWled failed
+Wled Protocol EnableCurrentSink failed
+Disp init wait [ 2146] 
+-----------------------------
+Platform Init  [ 2146] BDS
+Boot Cycle : 202
+Run  Cycle : 202
+UEFI Ver   : 5.0.210125.BOOT.XF.3.1-00270-SM6150LZB-1
+Platform           : IDP
+Subtype            : 0
+Boot Device        : UFS
+Chip Name          : SM7150
+Chip Ver           : 1.0
+-----------------------------
+ - 0x099E7D000 [ 2162] QcomChargerApp.efi
+UEFI Total : 1437 ms
+POST Time      [ 2165] OS Loader
+ - 0x27AF16000 [ 2172] LinuxLoader.efi
+Loader Build Info: Jan 25 2021 18:50:25
+Model Name : SM-A715F 
+VB: RWDeviceState: Succeed using rpmb!
+rid_adc value has been detected: 0
+JigCheckerInit: JigType is (0)
+[SAPA] 44 4C 4F 57 03 00 00 00 00 00 00 00 01 00 00 00 
+[SAPA] 01 00 00 00 00 00 00 00 00 00 00 00 53 41 50 41 
+[SAPA] 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+[FMM]QseecomStartApp (vk) call success status=0, vaultkeeperappid=3
+[FMM]Rsp: ALLZERO
+[FMM]GetFMMStatus Ret=(0xFBFB0000), Rsp status: 0
+FMMLock is OFF
+Muic, Interrupt 1:0x00, 2:0x00
+Muic, DEV_T2: 0x00, mUID ADC : 0x1F
+[CCIC] RID = 00
+(RID_OPEN)
+Muic, ADC Value : 0x07, Dev Type1 : 0x00, Vbus Status : 0x00
+[CCIC] RID = 00
+(RID_OPEN)
+Not ADC Oriented Device
+chg_get_charger_status : cable_type(0), jig_orientation(0), vbus_status(0)
+s2mu106_get_wireless_charger_detect : wireless check (0x00)
+chg_get_charger_status : cable_type(0), vbus_status(0)
+Muic, Interrupt 1:0x00, 2:0x00
+Muic, DEV_T2: 0x00, mUID ADC : 0x1F
+[CCIC] RID = 00
+(RID_OPEN)
+Muic, ADC Value : 0x07, Dev Type1 : 0x00, Vbus Status : 0x00
+dev_charging_init : cable_type(0), jig_type(0)
+s2mu106_fuel_gauge_read_vcell: vbat(3905)
+get_battery_temperature: Temp(326), Temp-ADC(12275), SUCCESS[5]
+get_hw_rev : hw rev=0x6 
+s2mu106_init_charger: chgin(SC_CTRL1: 0x12), wcin(SC_CTRL2: 0x12)
+s2mu106_init_charger: fcc(SC_CTRL7: 0x09), en_chg(SC_CTRL0: 0x01)
+s2mu106_disable_lsi_factory_mode: DISABLE FACTORY MODE
+s2mu106_set_float_voltage: S2MU106_CHG_CTRL5: 0x5A
+s2mu106_set_charger_state: S2MU106_CHG_CTRL0 : 0x3
+s2mu106_set_watchdog_kick: CHG fault status : 0x00
+s2mu106_set_watchdog_kick: CHG_CTRL0: 0x03
+s2mu106_chg_set_topoff: S2MU106_SC_CTRL10: 0xAA
+Muic, Interrupt 1:0x00, 2:0x00
+Muic, DEV_T2: 0x00, mUID ADC : 0x1F
+[CCIC] RID = 00
+(RID_OPEN)
+Muic, ADC Value : 0x07, Dev Type1 : 0x00, Vbus Status : 0x00
+[CCIC] RID = 00
+(RID_OPEN)
+Not ADC Oriented Device
+chg_get_charger_status : cable_type(0), jig_orientation(0), vbus_status(0)
+s2mu106_get_wireless_charger_detect : wireless check (0x00)
+chg_get_charger_status : cable_type(0), vbus_status(0)
+s2mu106_set_auto_current: cable_type(0), ilim(500), fcc(0)
+s2mu106_CHG_set_CHGIN_ILIM: S2MU106_CHG_CTRL1 : (500)0x12
+s2mu106_fuel_gauge_read_vcell: vbat(3905)
+s2mu106_CHG_set_FAST_CHG_CURRENT: S2MU106_CHG_CTRL7 : (0)0x00
+s2mu106_init_fuelgauge: fg_model_data_version = 0x1
+s2mu106_fuel_gauge_set_sys_voltage: S2MU106_REG_CTRL0(0x50)
+s2mu106_fuel_gauge_read_vcell: vbat(3905)
+jig_switch_control: POR state = 0x00, 0x1E = 0x 3, data_ver = 0x1(0x1), factory_mode(0), vcell(3905)
+jig_switch_control: Fuelgauge is Already initialized
+s2mu106_set_charger_state: S2MU106_CHG_CTRL0 : 0x3
+get_battery_temperature: Temp(326), Temp-ADC(12268), SUCCESS[5]
+s2mu106_fuel_gauge_read_soc_four_digits: raw capacity (0x2957:6459)
+s2mu106_fuel_gauge_read_vcell: vbat(3905)
+s2mu106_fuel_gauge_read_current: rCUR_CC(0x 48A)
+s2mu106_fuel_gauge_read_current: current result (-284)mA
+s2mu106_init_fuelgauge: SOC(6459), VCELL(3905), Curr(-284)
+Muic, Interrupt 1:0x00, 2:0x00
+Muic, DEV_T2: 0x00, mUID ADC : 0x1F
+[CCIC] RID = 00
+(RID_OPEN)
+Muic, ADC Value : 0x07, Dev Type1 : 0x00, Vbus Status : 0x00
+CableCheckerInit: CableType is (0)
+s2mu106_fuel_gauge_read_vcell: vbat(3905)
+FgGetVoltage: 3905
+FgGetVoltage: 3905 mV
+s2mu106_fuel_gauge_read_soc: raw capacity (0x2957:6459)
+s2mu106_fuel_gauge_read_soc: SOC 2 digit accuracy: 64%
+FgGetSoc: 64
+FgGetSoc: 64
+
+<GetPowerOnReason> PM 0:0x8000028000000001
+<GetPowerOnReason> PowerOnReason : HardReset[O] 
+<GetPowerOnReason> WarmResetReason : 
+<GetPowerOnReason> PowerOffReason : PS_HOLD 
+<GetPowerOnReason> FaultReason : 
+<GetPowerOnReason> OffReason : POFF_SEQ 
+<GetPowerOnReason> BootType : ColdBoot
+[SAPA] EFI_PmicRTCGetAlarmValueRaw: err=0, temp=1580518864
+[SAPA] RTC  =29130626
+[SAPA] ALARM=1580518864
+[SAPA] PARAM=0
+s2mu106_fuel_gauge_read_vcell: vbat(3905)
+FgGetVoltage: 3905
+Muic, Interrupt 1:0x00, 2:0x00
+Muic, DEV_T2: 0x00, mUID ADC : 0x1F
+[CCIC] RID = 00
+(RID_OPEN)
+Muic, ADC Value : 0x07, Dev Type1 : 0x00, Vbus Status : 0x00
+[CCIC] RID = 00
+(RID_OPEN)
+Not ADC Oriented Device
+chg_get_charger_status : cable_type(0), jig_orientation(0), vbus_status(0)
+s2mu106_get_wireless_charger_detect : wireless check (0x00)
+chg_get_charger_status : cable_type(0), vbus_status(0)
+ChgGetChargerStatus: 0
+Muic, Interrupt 1:0x00, 2:0x00
+Muic, DEV_T2: 0x00, mUID ADC : 0x1F
+[CCIC] RID = 00
+(RID_OPEN)
+Muic, ADC Value : 0x07, Dev Type1 : 0x00, Vbus Status : 0x00
+MuicGetJigType: 0
+CheckDeadBattery: rb=1, jig=0, ct=0, vcell=3905
+skip check low power
+
+
+========================================
+[0] 0 (0)
+[1] 0 (0)
+[2] 0 (0)
+[3] 0 (0)
+[4] 0 (0)
+========================================
+
+[KEY] PWD(0) INT(0) DN(0) UP(0) :: 0
+BootReason: 1
+Recovery Mode, Reset param!
+[SAPA] pm_rtc_alarm_en_ctl(0)
+QseecomStartApp (bksecapp) call success status=0, BKSecAppId=4
+[EMC] f: 0x3, 0x2
+[EMC] F: U
+[EMC]em_cmd_print_command : [CMD] : [EM_CMD_INIT]
+[EMC]bootloader_key_first_do_step : init state is [COMPLETED], pass
+[EMC]BLInitToken: No need to write Core data(0x0000000000000000)
+[EMC]BLInitToken: No need to write ESI data(0x0000000000000000)
+[EMC]BLInitToken: BLInitToken ret = 0x00000000
+[EMC]em_token_get_issuer_info : token is all zero
+[InitSecureParam]
+[KnoxCustom] knoxcustom_value : FFFFFFFF 
+s2mu106_fuel_gauge_read_vcell: vbat(3905)
+FgGetVoltage: 3905
+Muic, Interrupt 1:0x00, 2:0x00
+Muic, DEV_T2: 0x00, mUID ADC : 0x1F
+[CCIC] RID = 00
+(RID_OPEN)
+Muic, ADC Value : 0x07, Dev Type1 : 0x00, Vbus Status : 0x00
+[CCIC] RID = 00
+(RID_OPEN)
+Not ADC Oriented Device
+chg_get_charger_status : cable_type(0), jig_orientation(0), vbus_status(0)
+s2mu106_get_wireless_charger_detect : wireless check (0x00)
+chg_get_charger_status : cable_type(0), vbus_status(0)
+ChgGetChargerStatus: 0
+Muic, Interrupt 1:0x00, 2:0x00
+Muic, DEV_T2: 0x00, mUID ADC : 0x1F
+[CCIC] RID = 00
+(RID_OPEN)
+Muic, ADC Value : 0x07, Dev Type1 : 0x00, Vbus Status : 0x00
+MuicGetJigType: 0
+LPMModeChecker: cable_status(0), jig_status(0)
+s2mu106_fuel_gauge_read_vcell: vbat(3905)
+FgGetVoltage: 3905
+LPMModeChecker: PonReason.KPDPWR(0), PonReason.HARD_RESET(1), BootMode(2)
+get_battery_temperature: Temp(326), Temp-ADC(12270), SUCCESS[5]
+GetBattTemp: 326
+Temperature of target is good
+AST_POWERON
+==== GlibDrawBootImage Start(2333) ==== 
+GlibDrawBootImage : IMAGE_BLACK|IMAGE_CARRIER_DEFAULT 
+==== GlibDrawBootImage Finish(2346) ====
+[VIB] VibStart: 100
+vib_init REV : 6, TYPE: 0
+vib_init A70,M41,M51
+a70_vib_init
+[VIB] power control init
+vib_onoff: 1
+a70_vib_onoff: 1
+[2346] +[VIB] Timer Start
+Muic, Interrupt 1:0x00, 2:0x00
+Muic, DEV_T2: 0x00, mUID ADC : 0x1F
+[CCIC] RID = 00
+(RID_OPEN)
+Muic, ADC Value : 0x07, Dev Type1 : 0x00, Vbus Status : 0x00
+[CCIC] RID = 00
+(RID_OPEN)
+Not ADC Oriented Device
+chg_get_charger_status : cable_type(0), jig_orientation(0), vbus_status(0)
+s2mu106_get_wireless_charger_detect : wireless check (0x00)
+chg_get_charger_status : cable_type(0), vbus_status(0)
+ChgGetChargerStatus: 0
+s2mu106_fuel_gauge_read_vcell: vbat(3905)
+FgGetVoltage: 3905
+Muic, Interrupt 1:0x00, 2:0x00
+Muic, DEV_T2: 0x00, mUID ADC : 0x1F
+[CCIC] RID = 00
+(RID_OPEN)
+Muic, ADC Value : 0x07, Dev Type1 : 0x00, Vbus Status : 0x00
+MuicGetJigType: 0
+s2mu106_fuel_gauge_read_soc: raw capacity (0x2957:6459)
+s2mu106_fuel_gauge_read_soc: SOC 2 digit accuracy: 64%
+FgGetSoc: 64
+CheckLowBattery : jig=0, vcell=3905, soc=64
+skip check low battery
+Booting Into Recovery Mode
+EFI_QseecomStartApp: Invalid Parameters AppName: <null string>
+QseecomStartApp (DEFAULT) Please ignore upper error msg
+GetVmData: making ScmCall to get HypInfo
+GetVmData: No Vm data present! Status = (0x3)
+VM Hyp calls not present
+QseecomStartApp (bksecapp) call success status=0, BKSecAppId=4
+InitAuthInfoTables Start
+IsUnlocked : (0)
+[FRP]challenge_size is 115, 277
+[OEM]Oem unlock value is 0
+[FRP][OEM] init succeed!
+Failed.  Invalid Magic
+init cc mode flag 0xFFFFFFFE
+[MDM] mdm_value : 0 
+GetDdiBinaryTypeInt: will return 0x0
+[AFW] afw flag is Unknown
+[AFW] afw flag : 00 00 00 00
+[AFW] afw_value  : FFFFFFFF
+[KG]QseecomStartApp (vk) call success status=0, VKAppId=5
+[KG]QseecomShutdownApp (vk) shutdown success status=0, VKAppId=0
+[KG]KGstatus = ALLZERO(CBCBCB00), Rsp: 0
+Will return ImageStatus 
+0[0x2]1[0x2]2[0x2]3[0x2]4[0x0]5[0x2]6[0x2]7[0x2]8[0x2]9[0x0]10[0x2]11[0x0]
+ to DevAuth 
+Booting Into Recovery Mode
+IsUnlocked : (0)
+UpdateRollbackSyscall: Older TZ, skipping updateavb_slot_verify.c:753: DEBUG: Loading vbmeta struct from partition 'vbmeta'.
+Partition found: vbmeta
+Partition found: recovery
+avb_slot_verify.c:748: DEBUG: Loading vbmeta struct in footer from partition 'recovery'.
+Partition found: recovery
+Partition found: recovery
+[2495] -[VIB] Timer Stop
+vib_onoff: 0
+a70_vib_onoff: 0
+avb_slot_verify.c:297: DEBUG: recovery: success: Image verification completed
+Partition found: dtbo
+avb_slot_verify.c:748: DEBUG: Loading vbmeta struct in footer from partition 'dtbo'.
+Partition found: dtbo
+avb_slot_verify.c:748: DEBUG: Loading vbmeta struct in footer from partition 'prism'.
+avb_slot_verify.c:748: DEBUG: Loading vbmeta struct in footer from partition 'optics'.
+Partition found: abl
+avb_slot_verify.c:297: DEBUG: abl: success: Image verification completed
+Partition found: hyp
+avb_slot_verify.c:297: DEBUG: hyp: success: Image verification completed
+Partition found: tz
+avb_slot_verify.c:297: DEBUG: tz: success: Image verification completed
+Partition found: xbl
+avb_slot_verify.c:297: DEBUG: xbl: success: Image verification completed
+IsUnlocked : (0)
+Boot Image Header Info...
+Kernel Size 1            : 0xFCBF5A
+Kernel Size 2            : 0x0
+Ramdisk Size             : 0xAFCD17
+Image Header version     : 0x2
+DstLen 4296, SrcLen 31
+AVB CMD LINE [ androidboot.verifiedbootstate=]
+DstLen 4265, SrcLen 5
+AVB CMD LINE [green]
+DstLen 4260, SrcLen 24
+AVB CMD LINE [ androidboot.keymaster=1]
+DstLen 4236, SrcLen 1
+AVB CMD LINE [ ]
+GetUnlockCount : (0)
+GetUnlockCount : (0)
+ulcnt 0 -> str 0 
+DstLen 4235, SrcLen 19
+AVB CMD LINE [ androidboot.ulcnt=]
+DstLen 4216, SrcLen 2
+AVB CMD LINE [0 ]
+dm-verity cmdline Append!!
+DstLen 4214, SrcLen 377
+AVB CMD LINE [androidboot.vbmeta.device=PARTUUID=4b7a15d6-322c-42ac-8110-88b7da0c5d77 androidboot.vbmeta.avb_version=1.0 androidboot.vbmeta.device_state=locked androidboot.vbmeta.hash_alg=sha256 androidboot.vbmeta.size=17472 androidboot.vbmeta.digest=7f01Keymaster: Get date support error, status: 0, response status: -40
+Date in patch level not supported in keymaster
+Set Vbh Error, Status: Success, response status: -40
+VBH not supported in keymaster
+SetVbmetaDigest:
+IcccSetVerifiedBootHash:
+iccc_write_bl_data:
+[ConvertWBReasonToChar]: 0x0 -> '0' 
+IcccSetRotAndBootState:
+IcccSetTrustedBootState:
+VB2: Authenticate complete! boot state is: green
+GetUnlockCount : (0)
+VB2: The device unlocked 0 times
+VB2: boot state: green(0)
+Using SignerV2
+will update ImageStatus 
+0[0x2]1[0x2]2[0x2]3[0x2]4[0x0]5[0x2]6[0x2]7[0x2]8[0x2]9[0x0]10[0x2]11[0x0] 
+ to storage
+[Sec_Lib]ddi : saved
+(Booting) AUTHENTICATE Succeed Vbmeta binary: vbmeta
+Using SignerV2
+recovery Updated status 2
+will update ImageStatus 
+0[0x2]1[0x2]2[0x2]3[0x2]4[0x0]5[0x2]6[0x2]7[0x2]8[0x2]9[0x0]10[0x2]11[0x0] 
+ to storage
+[Sec_Lib]ddi : saved
+[RP] recovery, RpVerOnFuse = 3, RpVerOnIMG = 3
+(Booting) AUTHENTICATE Succeed Recovery binary: recovery
+IsUnlocked : (0)
+Boot State is : 0
+TZ informed of recovery status: 1
+GetVmData: making ScmCall to get HypInfo
+GetVmData: No Vm data present! Status = (0x3)
+Memory Base Address: 0x80000000
+Decompressing kernel image start: 2609 ms
+Decompressing kernel image done: 2974 ms
+Kernel Load Address: 0x80080000
+Kernel Size Actual: 0xFCC000
+Second Size Actual: 0x0
+Ramdisk Load Address: 0xA2000000
+Ramdisk Size Actual: 0xAFD000
+Ramdisk Offset: 0xFCD000
+Device Tree Load Address: 0x85500000
+Memory Base Address: 0x80000000
+Override DTB: GetBlkIOHandles failed loading user_dtbo!
+UFS Vendor : MICRON 
+FW rev     : 0007
+Product    : MT128GASAO4U219L
+UFS MD     : 0120
+[CCIC] ccic_check_active
+ CheckActive: 1
+ FgGetFgReset: 0
+Unknown DumpSink(0x0)
+[serialno] change to barcode serialnum
+[UCS] ucs flag is Unknown
+[UCS] ucs flag : 00 00 00 00
+[UCS] ucs_value  : 0
+[WP] Value : 0x0,0x0,0x1
+[KAP] success = 100
+ChgGetFactoryMode: 0
+Default Fac Model Name : SM-A715F
+product_name : SM-A715F
+CONFIG_SEC_PRODUCT_NAME : SM-A715F, product_name : SM-A715F
+ReadEseGpio: [1]
+
+RAM Partitions
+Add Base: 0x0000000080000000 Available Length: 0x0000000100000000 
+Add Base: 0x0000000180000000 Available Length: 0x00000000FBA00000 
+ERROR: Could not get splash memory region node
+kaslr-Seed is added to chosen node
+GetDdiBinaryTypeInt: will return 0x0
+kywzoro 0 0
+GetDdiBinaryTypeInt: will return 0x0
+[WP] Value : 0x0,0x0,0x1
+[USEWP] Value : 0x0(3:1)
+[USEWP] ClearWriteProtect Status : 0
+[USEWP] Result : 0x0(1:0)
+QseecomShutdownApp (bksecapp) shutdown success status=0, BKSecAppId=0
+
+Shutting Down UEFI Boot Services: 3473 ms
+Start EBS        [ 3473] 
+displaydriverlib_init ++: ndx=0
+displaydriverlib_init HW_REV : 0x6, ndx=0
+S6E3FA9_AMB667UM06_FHD_octa_init HW_REV = 6
+S6E3FA9_AMB667UM06_FHD_octa_init
+PBA_BOOTING_FHD_init
+displaydriverlib_init --: ndx=0
+displaydriverlib_init ++: ndx=1
+displaydriverlib_init HW_REV : 0x6, ndx=1
+PBA_BOOTING_FHD_init
+displaydriverlib_init --: ndx=1
+MDPLibProfile: splash enabled
+BDS: LogFs sync skipped, Unsupported
+Successfully synced all UEFI tables
+Sync Duration = 23 ms
+App Log Flush : 0 ms
+Exit EBS        [ 3501] UEFI End
+    

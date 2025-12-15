@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "888885056332",
+    "project_id": "smart-badminton-racket",
+    "storage_bucket": "smart-badminton-racket.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:888885056332:android:3f5e3a94a7921891d875e9",
+        "android_client_info": {
+          "package_name": "com.example.smartbadmintonracket"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBtg4Bae6MWQ46qJ9IAfxCgQWfvE29kDas"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
