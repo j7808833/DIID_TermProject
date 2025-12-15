@@ -1,19 +1,12 @@
-import 'imu_data.dart';
+import 'package:flutter/foundation.dart';
+import 'package:smart_racket_app/models/imu_data.dart';
 
+@immutable
 class IMUFrame {
-  // ---- Feature / inference input frame ----
-  //
-  // IMUFrame 是「模型/推論/視窗化」用的資料單位，和 IMUData 的差別在於：
-  // - IMUData：忠實對應 BLE 原始封包欄位（timestampMs + acc/gyro 分量 + voltage），偏資料蒐集與上傳
-  // - IMUFrame：轉成推論友善的表示（秒制 timestamp、向量化 acc/gyro、可套用 offset 校正）
-  //
-  // 常見用途：
-  // - 組成滑動視窗（List<IMUFrame>）送到 WebSocket/本地模型
-  // - 做即時顯示或統計（向量形式更好處理）
-  final double timestamp; // seconds
-  final List<double> acc; // [x,y,z] in g
-  final List<double> gyro; // [x,y,z] in dps
-  final double voltage; // V
+  final double timestamp; // 時間戳（秒），供 UI 繪圖 / 視窗切片 / 推論序列使用
+  final List<double> acc; // 加速度三軸（g），已套用 offset 與數值防呆
+  final List<double> gyro; // 角速度三軸（dps），已套用 offset 與數值防呆
+  final double voltage; // 電壓（V），供電源狀態顯示或記錄
 
   const IMUFrame({
     required this.timestamp,
@@ -22,61 +15,58 @@ class IMUFrame {
     required this.voltage,
   });
 
-  // ---- Conversion from raw sample with calibration offsets ----
-  //
-  // 這個 factory 以 IMUData 為輸入，並套用 accOffset / gyroOffset（通常來自校正或靜止估計）：
-  // - offset 設計成 List<double> 以便 UI/設定層用同一種資料結構管理三軸偏移
-  // - offset 可能為空或不足三個元素，因此每個軸都用長度檢查做防呆（缺值視為 0）
-  //
-  // 產出：
-  // - timestamp：直接採 raw.timestampSec（秒）
-  // - acc/gyro：三軸向量化後回傳，方便後續 windowing / JSON / 向量運算
   factory IMUFrame.fromIMUData(
       IMUData raw, {
-        required List<double> accOffset,
-        required List<double> gyroOffset,
+        List<double>? accOffset,
+        List<double>? gyroOffset,
       }) {
-    final ax = raw.accX - (accOffset.isNotEmpty ? accOffset[0] : 0);
-    final ay = raw.accY - (accOffset.length > 1 ? accOffset[1] : 0);
-    final az = raw.accZ - (accOffset.length > 2 ? accOffset[2] : 0);
+    // Offset 用於校正感測器零偏；若未提供或長度不足，視為 0 向量
+    final ao = (accOffset != null && accOffset.length >= 3)
+        ? accOffset
+        : const [0.0, 0.0, 0.0];
+    final go = (gyroOffset != null && gyroOffset.length >= 3)
+        ? gyroOffset
+        : const [0.0, 0.0, 0.0];
 
-    final gx = raw.gyroX - (gyroOffset.isNotEmpty ? gyroOffset[0] : 0);
-    final gy = raw.gyroY - (gyroOffset.length > 1 ? gyroOffset[1] : 0);
-    final gz = raw.gyroZ - (gyroOffset.length > 2 ? gyroOffset[2] : 0);
+    // 防止 NaN / Infinity 汙染下游：UI 繪圖、觸發判定、序列化、模型推論等流程
+    double safe(double v) => (v.isFinite && !v.isNaN) ? v : 0.0;
+
+    // 加速度套用 offset（零偏校正）並做安全化處理
+    final ax = safe(raw.accX - ao[0]);
+    final ay = safe(raw.accY - ao[1]);
+    final az = safe(raw.accZ - ao[2]);
+
+    // 角速度套用 offset（零偏校正）並做安全化處理
+    final gx = safe(raw.gyroX - go[0]);
+    final gy = safe(raw.gyroY - go[1]);
+    final gz = safe(raw.gyroZ - go[2]);
+
+    // 原始時間戳由 ms 轉為 s，統一資料時間單位以利視窗化與同步
+    final ts = safe(raw.timestampMs / 1000.0);
+    final vv = safe(raw.voltage);
 
     return IMUFrame(
-      timestamp: raw.timestampSec,
+      timestamp: ts,
       acc: [ax, ay, az],
       gyro: [gx, gy, gz],
-      voltage: raw.voltage,
+      voltage: vv,
     );
   }
 
-  // ---- Serialization (WebSocket / backend friendly) ----
-  //
-  // 這個 JSON schema 相對精簡：
-  // - ts：秒制 timestamp
-  // - acc/gyro：直接用向量（List<double>），對模型端或伺服器端組 tensor 很方便
-  // - v：電壓（保留基本監控資訊）
-  Map<String, dynamic> toJson() => {
+  /// ✅ 供 WebSocket / 後端 / 記錄用途的資料格式（與既有 websocket_service.dart schema 對齊）
+  Map<String, Object?> toJson() => <String, Object?>{
     'ts': timestamp,
     'acc': acc,
     'gyro': gyro,
-    'v': voltage,
+    'voltage': voltage,
   };
 
-  // ---- Debug / logging ----
-  //
-  // 以固定小數位輸出，方便在 console 或 log 快速比對：
-  // - timestamp：3 位
-  // - acc：3 位
-  // - gyro：1 位
-  // - voltage：3 位
   @override
   String toString() {
+    // 用於 debug log：統一小數位，便於快速檢查數值漂移與感測器狀態
     return 'ts=${timestamp.toStringAsFixed(3)} '
         'acc=${acc.map((e) => e.toStringAsFixed(3)).toList()} '
         'gyro=${gyro.map((e) => e.toStringAsFixed(1)).toList()} '
-        'v=${voltage.toStringAsFixed(3)}';
+        'voltage=${voltage.toStringAsFixed(3)}';
   }
 }

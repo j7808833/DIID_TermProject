@@ -3,170 +3,209 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:web_socket_channel/io.dart';
 
 import '../models/imu_frame.dart';
 
-/// ✅ JSON encode 放到 background isolate（compute 需要 top-level function）
-///
-/// compute(...) 只能吃 top-level / static function，因此把 jsonEncode 包成一個純函式。
-/// 目的：把「payload → JSON string」這個可能偏重的 CPU 工作移出 UI isolate，避免 jank。
+/// compute(...) 只能吃 top-level / static function
+/// - 將 payload JSON 序列化抽成 top-level function，便於用 compute() 搬到背景 isolate 執行
 String _encodePayload(Map<String, dynamic> payload) => jsonEncode(payload);
 
+enum WsConnState { disconnected, connecting, connected }
+
 class WebSocketService {
-  // ---- Connection primitives ----
-  //
-  // - _channel: web_socket_channel 提供的連線與 sink
-  // - _sub: 訂閱 server message 的 stream subscription
-  // - _currentUrl: 去重連線用（同 URL 且 still connected 就不重連）
   WebSocketChannel? _channel;
   StreamSubscription? _sub;
   String? _currentUrl;
 
-  // ---- Incoming message stream ----
-  //
-  // UI / Provider 透過 stream 收到 server 回傳（分類結果、速度、訊息等）。
-  // broadcast 允許多方訂閱（例如 debug page + home provider 同時 listen）。
+  // ---- Incoming message stream (broadcast) ----
+  /// 伺服器回傳訊息的統一出口（broadcast），讓多個 listener（Provider/UI/Log）可同時訂閱
   final StreamController<dynamic> _msgCtrl =
   StreamController<dynamic>.broadcast();
   Stream<dynamic> get stream => _msgCtrl.stream;
 
-  // ---- Connection state stream ----
-  //
-  // 對外提供簡化後的連線狀態（bool），避免 UI 需要依賴底層 socket 狀態細節。
-  // 這裡的 connected 定義是：成功收到第一個訊息後才標記為 true（見 connect() 的 listen）。
+  // ---- Connection state (3-state) ----
+  /// 連線狀態以 3-state 對外發布，UI 可用於顯示 connecting/connected/disconnected
+  final StreamController<WsConnState> _stateCtrl =
+  StreamController<WsConnState>.broadcast();
+  Stream<WsConnState> get stateStream => _stateCtrl.stream;
+
+  WsConnState _state = WsConnState.disconnected;
+  WsConnState get state => _state;
+
+  /// 舊版相容：bool stream（Connected=true）
+  /// - 保留舊接口，避免其他模組仍依賴 connectionStateStream
   final StreamController<bool> _connCtrl =
   StreamController<bool>.broadcast();
   Stream<bool> get connectionStateStream => _connCtrl.stream;
 
-  bool _connected = false;
-  bool get isConnected => _connected && _channel != null;
+  /// 防止重入與競態：disconnect/close 期間避免再次 send/connect 造成狀態錯亂
+  bool _closing = false;
+
+  bool get isConnected =>
+      !_closing && _channel != null && _state == WsConnState.connected;
+
+  /// 「可送出」比「已 connected」更寬鬆：connecting 時仍可能允許先排隊
+  bool get canSend =>
+      !_closing && _channel != null && _state != WsConnState.disconnected;
 
   // ---- Client identity ----
-  //
-  // client_id 會包在每次 outgoing payload 內，讓 server 能識別來源（例如對應 sessionId）。
-  // HomeProvider 會在 startRecording 後把 Firebase sessionId 注入進來（若可用）。
+  /// client_id：讓後端能區分不同裝置/錄製 session（通常會用 Firebase sessionId 覆寫）
   String _clientId = 'SmartRacket';
   void setClientId(String id) {
     final t = id.trim();
     if (t.isNotEmpty) _clientId = t;
   }
 
-  // ===== Outgoing throttled queue =====
-  //
-  // 本服務的 outgoing 策略是「只保留最新的一窗」：
-  // - _pendingLatest: 最新 window（List<IMUFrame>）
-  // - _sending: 避免同時送出多次（互斥）
-  // - _sendTimer: 節流用的 periodic timer
-  //
-  // 目標：避免 backlog 堆積（例如感測資料產生速度 > 網路/Server 處理速度），
-  // 讓系統保持「近即時」而不是「延遲越來越大」。
+  // ---- Outgoing throttled queue ----
+  /// 視窗資料採「最新覆蓋」策略：短時間多次 enqueue 只保留最後一包，避免堆積延遲
   List<IMUFrame>? _pendingLatest;
   bool _sending = false;
   Timer? _sendTimer;
-
-  // 送出節流：最多 10Hz（可自行調整）
-  //
-  // enqueueWindow 可能被高頻呼叫（由 DataBufferManager 觸發），
-  // 因此用 100ms 節流確保「最多 10 次/秒」送到 server，避免頻寬與 encode 成本失控。
   static const Duration _sendInterval = Duration(milliseconds: 100);
 
-  // disconnect 重入保護：避免 onError/onDone 同時觸發多次 disconnect() 造成競態。
-  bool _closing = false;
+  // ---- Optional keepalive ----
+  /// 可選 keepalive：避免某些網路/代理在 idle 時切斷 WebSocket
+  Timer? _pingTimer;
+  static const Duration _keepAlivePingInterval = Duration(seconds: 10);
 
-  // ---- Connect ----
-  //
-  // connect 流程：
-  // 1) sanitize url（trim/empty）
-  // 2) 同 URL 且 still connected → 直接 return（去重）
-  // 3) disconnect() 清乾淨，再建立新 channel
-  // 4) 先把 _connected 設 false，等待收到第一則 server message 才視為連線成立
-  // 5) 訂閱 _channel.stream：
-  //    - onData：第一次收到訊息時標記 connected=true（並推送 connection state）
-  //    - onError/onDone：標記 disconnected，並做完整 disconnect 清理
   Future<void> connect(String url) async {
     final u = url.trim();
     if (u.isEmpty) return;
 
+    // 同 URL 且已連線 -> 不重連（避免重複握手/重複訂閱 stream）
     if (_channel != null && _currentUrl == u && isConnected) return;
 
     await disconnect();
     _currentUrl = u;
 
-    final uri = Uri.parse(u);
-    _channel = WebSocketChannel.connect(uri);
+    Uri uri;
+    try {
+      uri = Uri.parse(u);
+    } catch (e) {
+      if (kDebugMode) debugPrint('WS invalid url: $u ($e)');
+      _setState(WsConnState.disconnected);
+      return;
+    }
 
-    _connected = false;
-    _safeConn(false);
+    _closing = false;
+    _setState(WsConnState.connecting);
 
+    try {
+      // 平台分流：mobile/desktop 走 IOWebSocketChannel；Web 走 WebSocketChannel
+      // - IO 端可透過 pingInterval 讓底層維持連線活性
+      if (!kIsWeb) {
+        _channel = IOWebSocketChannel.connect(
+          uri,
+          pingInterval: const Duration(seconds: 20),
+        );
+      } else {
+        // Web：缺乏可靠 onOpen callback，建立後先交由 state 管理
+        _channel = WebSocketChannel.connect(uri);
+      }
+
+      // v2/v3 連線策略：建立 channel 後先視為 connected，後續由 onError/onDone 收斂回 disconnected
+      _setState(WsConnState.connected);
+    } catch (e) {
+      if (kDebugMode) debugPrint('WS connect failed: $e');
+      _channel = null;
+      _setState(WsConnState.disconnected);
+      return;
+    }
+
+    // 訂閱 channel stream：統一轉發到 msg stream；錯誤/結束時做清理與狀態回復
     _sub = _channel!.stream.listen(
           (msg) {
-        if (!_connected) {
-          _connected = true;
-          _safeConn(true);
-        }
         _safeMsg(msg);
       },
       onError: (e) async {
         if (kDebugMode) debugPrint('WS error: $e');
-        _connected = false;
-        _safeConn(false);
+        _setState(WsConnState.disconnected);
         await disconnect();
       },
       onDone: () async {
-        _connected = false;
-        _safeConn(false);
+        _setState(WsConnState.disconnected);
         await disconnect();
       },
       cancelOnError: false,
     );
+
+    // 連上後啟動 keepalive（不要求 pong，純維持活性）
+    _armKeepAlivePing();
   }
 
-  /// 舊版相容：HomeProvider 直接丟 frames 進來即可
-  /// ✅ 只保留最新一窗 + 節流送出
-  ///
-  // enqueueWindow 是 HomeProvider 的主要呼叫入口（相容舊版 sendWindow/queue 的語意）。
-  // 行為：
-  // - 若未連線或 frames 空 → 忽略
-  // - 覆蓋 pending（只保留最新窗）
-  // - 若 timer 尚未啟動 → 啟動 periodic pump
-  // - 立即 pump 一次，降低延遲（不必等到下一個 tick）
-  void enqueueWindow(List<IMUFrame> frames) {
-    if (!isConnected) return;
-    if (frames.isEmpty) return;
+  /// v2/v3 等級偵測：不要求 pong
+  /// - connect 後在 timeout 內觀察是否掉回 disconnected
+  /// - 若持續維持非 disconnected，視為「可連」
+  Future<bool> probeOnce(
+      String url, {
+        Duration timeout = const Duration(seconds: 3),
+      }) async {
+    final u = url.trim();
+    if (u.isEmpty) return false;
 
-    // 只保留最新窗（覆蓋舊的）
-    _pendingLatest = frames;
+    await connect(u);
 
-    // 啟動節流 timer（若尚未啟動）
-    _sendTimer ??= Timer.periodic(_sendInterval, (_) {
-      _pumpSend();
+    // connect() 內部若失敗會把 state 設回 disconnected
+    if (state == WsConnState.disconnected) return false;
+
+    final completer = Completer<bool>();
+    StreamSubscription<WsConnState>? sub;
+    Timer? t;
+
+    sub = stateStream.listen((s) {
+      if (s == WsConnState.disconnected && !completer.isCompleted) {
+        completer.complete(false);
+      }
     });
 
-    // 立即嘗試送一次（不等下一個 tick）
+    t = Timer(timeout, () {
+      if (completer.isCompleted) return;
+      completer.complete(state != WsConnState.disconnected);
+    });
+
+    final ok = await completer.future;
+
+    try {
+      await sub.cancel();
+    } catch (_) {}
+    t.cancel();
+
+    return ok;
+  }
+
+  // ---- Compatibility ----
+  /// 舊 API：保留 sendWindow 但導向新的 enqueueWindow（統一出口）
+  void sendWindow(List<IMUFrame> frames) => enqueueWindow(frames);
+
+  // ---- Enqueue & throttle ----
+  /// 送出策略：
+  /// - 上游可能以高頻率產生 window（事件觸發後連續送），此處做節流與最新覆蓋
+  /// - Timer 以固定間隔 pump，確保傳輸頻率可控且避免 sink 被塞爆
+  void enqueueWindow(List<IMUFrame> frames) {
+    if (!canSend) return;
+    if (frames.isEmpty) return;
+
+    _pendingLatest = frames;
+
+    _sendTimer ??= Timer.periodic(_sendInterval, (_) => _pumpSend());
     _pumpSend();
   }
 
-  // ---- Send pump ----
-  //
-  // pumpSend 是節流器的核心：
-  // - 互斥：_sending=true 時不重入
-  // - 把 pendingLatest 取出並清空（避免同一窗被重複送出；新窗會覆蓋進來）
-  // - whenComplete 後若沒有 pending，就停掉 timer（避免常駐喚醒）
   void _pumpSend() {
-    if (!isConnected) return;
+    if (!canSend) return;
     if (_sending) return;
 
     final frames = _pendingLatest;
     if (frames == null || frames.isEmpty) return;
 
-    // 把 pending 清掉（新窗會再覆蓋）
     _pendingLatest = null;
 
     _sending = true;
     _sendWindowInternal(_clientId, frames).whenComplete(() {
       _sending = false;
 
-      // 沒有 pending 了 -> 停掉 timer，避免常駐喚醒
+      // 若沒有待送資料就停止 timer，避免背景常駐
       if (_pendingLatest == null) {
         _sendTimer?.cancel();
         _sendTimer = null;
@@ -174,43 +213,52 @@ class WebSocketService {
     });
   }
 
-  // ---- Internal send ----
-  //
-  // _sendWindowInternal 做兩件事：
-  // 1) 以 client_id + frames.toJson() 建出 payload Map（此步驟相對輕）
-  // 2) 用 compute 在 background isolate jsonEncode（主要重點：避免卡 UI）
-  // 成功後 _channel.sink.add(encoded) 送出；失敗只記 log、不 throw（避免 Timer/UI 被 exception 撕裂）。
   Future<void> _sendWindowInternal(String clientId, List<IMUFrame> frames) async {
-    if (!isConnected) return;
+    if (!canSend) return;
 
-    // 建 payload（只是一個 Map，真正重的是 jsonEncode）
+    // 統一 payload schema：type/window + client_id + data[]
     final payload = <String, dynamic>{
+      'type': 'window',
       'client_id': clientId,
       'data': frames.map((f) => f.toJson()).toList(growable: false),
     };
 
     try {
-      // ✅ 背景 isolate 做 JSON encode（避免卡 UI）
+      // JSON encode 可能耗時，交給 compute() 避免卡住 UI thread
       final encoded = await compute(_encodePayload, payload);
-      if (!isConnected) return;
+      if (!canSend) return;
       _channel!.sink.add(encoded);
     } catch (e) {
-      // 送出失敗：不要 throw，避免把 UI/Timer 拉垮
       if (kDebugMode) debugPrint('WS send failed: $e');
     }
   }
 
-  // ---- Disconnect ----
-  //
-  // disconnect 需要是「可安全重入」：
-  // - _closing guard 避免多路徑（手動呼叫、onError、onDone）同時進來
-  // - 停 timer / 清 pending
-  // - cancel message subscription
-  // - 關閉 sink（close websocket）
-  // - 重置狀態並推送 conn=false
+  void _armKeepAlivePing() {
+    _pingTimer?.cancel();
+    _pingTimer = null;
+
+    if (_state != WsConnState.connected) return;
+
+    _pingTimer = Timer.periodic(_keepAlivePingInterval, (_) {
+      // 輕量 ping：不要求伺服器回 pong，只是避免連線 idle 被中斷
+      if (!canSend) return;
+      try {
+        _channel!.sink.add(jsonEncode({
+          'type': 'ping',
+          'client_id': _clientId,
+          'ts': DateTime.now().millisecondsSinceEpoch,
+        }));
+      } catch (_) {}
+    });
+  }
+
   Future<void> disconnect() async {
+    // 關閉流程集中於此：避免重複 close 導致例外或狀態錯亂
     if (_closing) return;
     _closing = true;
+
+    _pingTimer?.cancel();
+    _pingTimer = null;
 
     _sendTimer?.cancel();
     _sendTimer = null;
@@ -226,35 +274,31 @@ class WebSocketService {
     } catch (_) {}
 
     _channel = null;
-    _connected = false;
-    _safeConn(false);
+    _setState(WsConnState.disconnected);
 
     _closing = false;
   }
 
-  // ---- Safe emit helpers ----
-  //
-  // StreamController 關閉後 add 會 throw，因此以 isClosed guard 保護。
-  // 這兩個 helper 讓 connect/disconnect 路徑更乾淨（不必到處 try-catch）。
+  /// 狀態更新入口：同步推送 3-state 與舊版 bool stream
+  void _setState(WsConnState s) {
+    if (_state == s) return;
+    _state = s;
+
+    if (!_stateCtrl.isClosed) _stateCtrl.add(s);
+    if (!_connCtrl.isClosed) _connCtrl.add(s == WsConnState.connected);
+  }
+
+  /// 轉發訊息時保護 controller：避免已 close 後仍 add 造成 exception
   void _safeMsg(dynamic msg) {
     if (_msgCtrl.isClosed) return;
     _msgCtrl.add(msg);
   }
 
-  void _safeConn(bool v) {
-    if (_connCtrl.isClosed) return;
-    _connCtrl.add(v);
-  }
-
-  // ---- Manual cleanup ----
-  //
-  // Provider/上層結束生命週期時呼叫：
-  // - 先 async disconnect（不 await，避免阻塞 dispose 呼叫端）
-  // - 關閉 controllers（停止對外 broadcast）
   void dispose() {
     // ignore: discarded_futures
     disconnect();
     _msgCtrl.close();
+    _stateCtrl.close();
     _connCtrl.close();
   }
 }
